@@ -82,7 +82,16 @@
     }
     .spec-table .qty {
       text-align: center;
-      width: 50px;
+      width: 70px;
+    }
+    .spec-table .price-cell {
+      text-align: right;
+      font-size: 1.23rem;
+      font-weight: bold;
+      color: #d12a00;
+      width: 170px;
+      letter-spacing: 1px;
+      background: #f8eede;
     }
     .spec-table select {
       width: 98%;
@@ -90,6 +99,15 @@
       padding: 3px 2px;
       border-radius: 4px;
       border: 1px solid #c6e6f2;
+      background: #fff;
+    }
+    .spec-table input[type=number] {
+      width: 60px;
+      font-size: 1rem;
+      padding: 3px 2px;
+      border-radius: 4px;
+      border: 1px solid #c6e6f2;
+      text-align: center;
       background: #fff;
     }
     .summary-row {
@@ -247,11 +265,11 @@
   <script>
     // 模擬現金優惠折扣(自行調整)
     function calcDiscount(total) {
-      // 舉例：總價打95折
       return Math.round(total * 0.95);
     }
 
-    let selectedModels = {}; // {catIndex: modelIndex}
+    let selectedModels = {};
+    let quantities = {};
 
     function renderPartsTable() {
       const partsData = JSON.parse(localStorage.getItem('partsData') || "[]");
@@ -265,7 +283,6 @@
         </tr>
       `;
       let oriTotal = 0;
-      let nowTotal = 0;
       // 每個類別一列
       partsData.forEach((cat, catIdx) => {
         let models = cat.models || [];
@@ -273,7 +290,9 @@
         let selectIdx = selectedModels[catIdx] || 0;
         if (selectIdx >= models.length) selectIdx = 0;
         let price = (models[selectIdx] && models[selectIdx].price) ? Number(models[selectIdx].price) : 0;
-        oriTotal += price;
+        let qty = quantities[catIdx] !== undefined ? Number(quantities[catIdx]) : 1;
+        if(qty < 1) qty = 1;
+        oriTotal += price * qty;
 
         const tr = document.createElement('tr');
         // 型號下拉
@@ -287,8 +306,10 @@
         tr.innerHTML = `
           <td class="cat">${cat.name}</td>
           <td class="model">${selectHtml}</td>
-          <td class="qty">1</td>
-          <td class="model">${price ? '$ ' + price.toLocaleString() : ''}</td>
+          <td class="qty">
+            <input type="number" min="1" value="${qty}" data-cat="${catIdx}" onchange="onQtyChange(this)">
+          </td>
+          <td class="price-cell">${price ? '$ ' + price.toLocaleString() : ''}</td>
         `;
         table.appendChild(tr);
       });
@@ -311,6 +332,16 @@
       renderPartsTable();
     }
     window.onModelChange = onModelChange;
+
+    // 數量編輯事件
+    function onQtyChange(input) {
+      const catIdx = input.getAttribute('data-cat');
+      let val = Number(input.value);
+      if(val < 1) val = 1;
+      quantities[catIdx] = val;
+      renderPartsTable();
+    }
+    window.onQtyChange = onQtyChange;
 
     function showInstallments(nowPrice) {
       // 刷卡分期費率
@@ -385,8 +416,10 @@
       // 預設選第一個型號
       const partsData = JSON.parse(localStorage.getItem('partsData') || "[]");
       selectedModels = {};
+      quantities = {};
       partsData.forEach((cat, catIdx) => {
         selectedModels[catIdx] = 0;
+        quantities[catIdx] = 1;
       });
     }
 
