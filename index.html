@@ -67,6 +67,10 @@
       text-align: left;
       background: #f9fcfe;
     }
+    .spec-table th.cat, .spec-table td.cat { width: 140px; }
+    .spec-table th.model, .spec-table td.model { width: 320px; }
+    .spec-table th.qty, .spec-table td.qty { width: 100px; }
+    .spec-table th.price-cell, .spec-table td.price-cell { width: 180px; }
     .spec-table th {
       background: #e2f3fa;
       color: #0076a6;
@@ -75,21 +79,18 @@
     .spec-table .cat {
       font-weight: bold;
       color: #0076a6;
-      width: 110px;
     }
     .spec-table .model {
       color: #333;
     }
     .spec-table .qty {
       text-align: center;
-      width: 70px;
     }
     .spec-table .price-cell {
       text-align: right;
       font-size: 1.23rem;
       font-weight: bold;
       color: #d12a00;
-      width: 170px;
       letter-spacing: 1px;
       background: #f8eede;
     }
@@ -102,7 +103,7 @@
       background: #fff;
     }
     .spec-table input[type=number] {
-      width: 60px;
+      width: 70px;
       font-size: 1rem;
       padding: 3px 2px;
       border-radius: 4px;
@@ -205,6 +206,7 @@
         <img src="https://i.imgur.com/C8y1sku.png" alt="KPC Logo">
         <div class="logo-text">KPC 電腦報價單</div>
       </div>
+      <!-- 後台管理連結 -->
       <a class="admin-link" href="backend.html" target="_blank">管理後台</a>
     </div>
 
@@ -215,7 +217,7 @@
           <th class="cat">配件類別</th>
           <th class="model">型號</th>
           <th class="qty">數量</th>
-          <th class="model">價格</th>
+          <th class="price-cell">價格</th>
         </tr>
         <!-- 動態產生 -->
       </table>
@@ -263,39 +265,46 @@
     </div>
   </div>
   <script>
-    // 模擬現金優惠折扣(自行調整)
+    // 現金優惠價計算，這裡設定為總價打95折
     function calcDiscount(total) {
       return Math.round(total * 0.95);
     }
 
+    // 儲存每個類別目前選擇的型號
     let selectedModels = {};
+    // 儲存每個類別目前設定的數量
     let quantities = {};
 
+    // 產生零件表格與即時金額計算
     function renderPartsTable() {
       const partsData = JSON.parse(localStorage.getItem('partsData') || "[]");
       const table = document.getElementById('specTable');
+      // 表頭
       table.innerHTML = `
         <tr>
           <th class="cat">配件類別</th>
           <th class="model">型號</th>
           <th class="qty">數量</th>
-          <th class="model">價格</th>
+          <th class="price-cell">價格</th>
         </tr>
       `;
       let oriTotal = 0;
       // 每個類別一列
       partsData.forEach((cat, catIdx) => {
         let models = cat.models || [];
-        // 沒型號就顯示空白
+        // 取得目前類別選擇的型號 index，預設 0
         let selectIdx = selectedModels[catIdx] || 0;
         if (selectIdx >= models.length) selectIdx = 0;
+        // 取得對應型號的價格
         let price = (models[selectIdx] && models[selectIdx].price) ? Number(models[selectIdx].price) : 0;
+        // 取得目前數量，預設 1
         let qty = quantities[catIdx] !== undefined ? Number(quantities[catIdx]) : 1;
         if(qty < 1) qty = 1;
+        // 累加至總價
         oriTotal += price * qty;
 
         const tr = document.createElement('tr');
-        // 型號下拉
+        // 型號下拉選單
         let selectHtml = `<select data-cat="${catIdx}" onchange="onModelChange(this)">`;
         models.forEach((m, mIdx) => {
           let sel = (mIdx === selectIdx) ? 'selected' : '';
@@ -303,6 +312,7 @@
         });
         selectHtml += "</select>";
 
+        // 建立該列內容
         tr.innerHTML = `
           <td class="cat">${cat.name}</td>
           <td class="model">${selectHtml}</td>
@@ -314,17 +324,17 @@
         table.appendChild(tr);
       });
 
-      // 顯示總價
+      // 顯示原價總和
       document.getElementById('oriPrice').textContent = "$ " + oriTotal.toLocaleString();
-      // 優惠價
+      // 計算優惠價
       const nowPrice = calcDiscount(oriTotal);
       document.getElementById('nowPrice').textContent = "$ " + nowPrice.toLocaleString();
       document.getElementById('priceNote').textContent = "*實際優惠依現場公告";
-      // 分期表
+      // 產生分期付款表
       showInstallments(nowPrice);
     }
 
-    // 型號下拉選單變動事件
+    // 型號下拉選單變動事件，更新 selectedModels 並重繪表格
     function onModelChange(sel) {
       const catIdx = sel.getAttribute('data-cat');
       const modelIdx = sel.value;
@@ -333,7 +343,7 @@
     }
     window.onModelChange = onModelChange;
 
-    // 數量編輯事件
+    // 數量欄位變動事件，更新 quantities 並重繪表格
     function onQtyChange(input) {
       const catIdx = input.getAttribute('data-cat');
       let val = Number(input.value);
@@ -343,8 +353,9 @@
     }
     window.onQtyChange = onQtyChange;
 
+    // 顯示刷卡分期與無卡分期表
     function showInstallments(nowPrice) {
-      // 刷卡分期費率
+      // 刷卡分期方案
       const cardRates = [
         {term: "付清", rate: 1, fee: 0},
         {term: "3期", rate: 1.03, fee: 0},
@@ -352,7 +363,7 @@
         {term: "12期", rate: 1.06, fee: 0},
         {term: "24期", rate: 1.06, fee: 0}
       ];
-      // 無卡分期費率
+      // 無卡分期方案
       const noCardRates = [
         {term: "6期", rate: 1.026, fee: 0},
         {term: "9期", rate: 1.055, fee: 0},
@@ -363,7 +374,7 @@
         {term: "24期", rate: 1.115, fee: 0},
         {term: "30期", rate: 1.12, fee: 0}
       ];
-      // 刷卡分期
+      // 產生刷卡分期表
       const cardTable = document.getElementById('cardTable');
       cardTable.innerHTML = `
         <tr>
@@ -386,7 +397,7 @@
         `;
         cardTable.appendChild(tr);
       });
-      // 無卡分期
+      // 產生無卡分期表
       const noCardTable = document.getElementById('noCardTable');
       noCardTable.innerHTML = `
         <tr>
@@ -407,13 +418,14 @@
           <td>$ ${total.toLocaleString()}</td>
           <td>$ ${per.toLocaleString()}</td>
         `;
+        // 30期加紅色
         if(r.term === "30期") tr.querySelectorAll('td').forEach(td=>td.classList.add('red'));
         noCardTable.appendChild(tr);
       });
     }
 
+    // 初始化預設選擇（每個類別選第一個型號，數量為1）
     function loadSelectedModels() {
-      // 預設選第一個型號
       const partsData = JSON.parse(localStorage.getItem('partsData') || "[]");
       selectedModels = {};
       quantities = {};
@@ -423,13 +435,16 @@
       });
     }
 
+    // 初始化/重繪畫面
     function updatePage() {
       loadSelectedModels();
       renderPartsTable();
     }
 
+    // 載入頁面時執行初始化
     updatePage();
-    // 支援 localStorage 更新後自動刷新
+
+    // 監聽 localStorage 變動（例如後台同步更新時自動刷新）
     window.addEventListener('storage', function(e){
       if(e.key === "partsData") updatePage();
     });
