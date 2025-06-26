@@ -4,169 +4,35 @@
   <meta charset="UTF-8">
   <title>電腦估價車後台管理</title>
   <style>
-    body {
-      background: #eef4f8;
-      font-family: 'Noto Sans TC', Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      width: 760px;
-      margin: 32px auto;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 8px 32px #0001;
-      padding: 32px 36px 24px 36px;
-    }
-    h2 {
-      color: #1a9bd7;
-      margin-top: 0;
-      font-weight: 900;
-      letter-spacing: 2px;
-    }
-    .category-list {
-      margin-bottom: 28px;
-    }
-    .category-item {
-      background: #f6fbff;
-      border-radius: 8px;
-      margin-bottom: 18px;
-      padding: 16px 22px 10px 22px;
-      border: 1px solid #c6e6f2;
-      position: relative;
-    }
-    .category-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    .category-name {
-      font-size: 1.15rem;
-      font-weight: bold;
-      color: #0076a6;
-      margin-right: 12px;
-    }
-    .delete-category {
-      color: #e70000;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.95rem;
-      margin-left: 10px;
-      transition: color 0.2s;
-    }
-    .delete-category:hover {
-      color: #b00000;
-    }
-    .model-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 8px;
-      font-size: 1rem;
-    }
-    .model-table th, .model-table td {
-      border: 1px solid #c6e6f2;
-      padding: 7px 8px;
-      text-align: left;
-      background: #f9fcfe;
-    }
-    .model-table th {
-      background: #e2f3fa;
-      color: #0076a6;
-      font-weight: bold;
-    }
-    .model-table td input[type=text], .model-table td input[type=number] {
-      width: 92%;
-      padding: 2px;
-      font-size: 1rem;
-      border: 1px solid #c6e6f2;
-      border-radius: 3px;
-      background: #fff;
-    }
-    .model-table td input[type=number]::-webkit-inner-spin-button,
-    .model-table td input[type=number]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    .delete-model {
-      color: #e70000;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 0 3px;
-      margin-left: 4px;
-    }
-    .add-model-btn {
-      font-size: 0.96rem;
-      background: #1a9bd7;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 5px 17px;
-      margin-top: 5px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .add-model-btn:hover {
-      background: #1580b8;
-    }
-    .add-category-block {
-      margin-bottom: 34px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .add-category-block input[type=text] {
-      font-size: 1rem;
-      padding: 5px 10px;
-      border-radius: 4px;
-      border: 1px solid #c6e6f2;
-      background: #f9fcfe;
-      width: 220px;
-    }
-    .add-category-block button {
-      font-size: 0.98rem;
-      background: #1a9bd7;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 7px 20px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .add-category-block button:hover {
-      background: #1580b8;
-    }
-    .save-block {
-      text-align: right;
-      margin-top: 24px;
-    }
-    .save-btn {
-      font-size: 1.08rem;
-      background: #22b255;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 10px 34px;
-      cursor: pointer;
-      transition: background 0.2s;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-    .save-btn:hover {
-      background: #18813b;
-    }
-    .msg {
-      color: #008813;
-      margin-top: 10px;
-      font-size: 1.02rem;
-      text-align: right;
-      min-height: 24px;
-    }
-    @media (max-width: 850px) {
-      .container { width: 96vw; padding: 10px;}
-    }
+    body { background: #eef4f8; font-family: 'Noto Sans TC', Arial, sans-serif; margin: 0; padding: 0;}
+    .container { width: 760px; margin: 32px auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 32px #0001; padding: 32px 36px 24px 36px;}
+    h2 { color: #1a9bd7; margin-top: 0; font-weight: 900; letter-spacing: 2px;}
+    .category-list { margin-bottom: 28px;}
+    .category-item { background: #f6fbff; border-radius: 8px; margin-bottom: 18px; padding: 16px 22px 10px 22px; border: 1px solid #c6e6f2; position: relative;}
+    .category-header { display: flex; align-items: center; margin-bottom: 10px;}
+    .category-name { font-size: 1.15rem; font-weight: bold; color: #0076a6; margin-right: 12px;}
+    .delete-category { color: #e70000; background: none; border: none; cursor: pointer; font-size: 0.95rem; margin-left: 10px; transition: color 0.2s;}
+    .delete-category:hover { color: #b00000;}
+    .model-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 1rem;}
+    .model-table th, .model-table td { border: 1px solid #c6e6f2; padding: 7px 8px; text-align: left; background: #f9fcfe;}
+    .model-table th { background: #e2f3fa; color: #0076a6; font-weight: bold;}
+    .model-table td input[type=text], .model-table td input[type=number] { width: 92%; padding: 2px; font-size: 1rem; border: 1px solid #c6e6f2; border-radius: 3px; background: #fff;}
+    .delete-model { color: #e70000; background: none; border: none; cursor: pointer; font-size: 1rem; padding: 0 3px; margin-left: 4px;}
+    .add-model-btn { font-size: 0.96rem; background: #1a9bd7; color: #fff; border: none; border-radius: 4px; padding: 5px 17px; margin-top: 5px; cursor: pointer; transition: background 0.2s;}
+    .add-model-btn:hover { background: #1580b8; }
+    .add-category-block { margin-bottom: 34px; display: flex; align-items: center; gap: 12px;}
+    .add-category-block input[type=text] { font-size: 1rem; padding: 5px 10px; border-radius: 4px; border: 1px solid #c6e6f2; background: #f9fcfe; width: 220px;}
+    .add-category-block button { font-size: 0.98rem; background: #1a9bd7; color: #fff; border: none; border-radius: 4px; padding: 7px 20px; cursor: pointer; transition: background 0.2s;}
+    .add-category-block button:hover { background: #1580b8;}
+    .save-block { text-align: right; margin-top: 24px;}
+    .save-btn { font-size: 1.08rem; background: #22b255; color: #fff; border: none; border-radius: 6px; padding: 10px 34px; cursor: pointer; transition: background 0.2s; font-weight: bold; letter-spacing: 1px;}
+    .save-btn:hover { background: #18813b;}
+    .msg { color: #008813; margin-top: 10px; font-size: 1.02rem; text-align: right; min-height: 24px;}
+    .bulk-input-block { margin: 12px 0;}
+    .bulk-input-block textarea { width: 100%; height: 80px; border-radius: 5px; border: 1px solid #c6e6f2; padding: 5px; font-size: 1rem;}
+    .bulk-input-block button { margin-top:3px; font-size: 0.95rem; background: #22b255; color: #fff; border: none; border-radius: 4px; padding: 5px 14px; cursor: pointer;}
+    .bulk-input-block button:hover { background: #18813b;}
+    @media (max-width: 850px) { .container { width: 96vw; padding: 10px;}}
   </style>
 </head>
 <body>
@@ -190,7 +56,6 @@
     // 資料格式: [{name:'處理器',models:[{model:'Intel...', price:12345}, ...]}, ...]
     let data = [];
 
-    // 載入已儲存資料
     function loadData() {
       const raw = localStorage.getItem('partsData');
       data = raw ? JSON.parse(raw) : [];
@@ -236,6 +101,21 @@
       renderCategories();
     }
 
+    function bulkInput(catIdx) {
+      const area = document.getElementById('bulkInput' + catIdx);
+      const lines = area.value.trim().split('\n');
+      // 支援兩欄：型號[tab]價格 或 型號,價格 或 型號（只要一欄也可）
+      lines.forEach(line => {
+        let arr = line.split('\t');
+        if(arr.length < 2) arr = line.split(',');
+        let model = arr[0].trim();
+        let price = arr[1] ? arr[1].replace(/[^\d]/g,'') : '';
+        if(model) data[catIdx].models.push({model, price});
+      });
+      area.value = '';
+      renderCategories();
+    }
+
     function renderCategories() {
       const list = document.getElementById('categoryList');
       list.innerHTML = '';
@@ -253,6 +133,15 @@
         delBtn.onclick = ()=>deleteCategory(catIdx);
         header.appendChild(delBtn);
         div.appendChild(header);
+
+        // bulk input
+        const bulkDiv = document.createElement('div');
+        bulkDiv.className = 'bulk-input-block';
+        bulkDiv.innerHTML = `
+          <textarea id="bulkInput${catIdx}" placeholder="可直接從 Google Sheet 複製貼上多行，格式：型號[TAB]價格 或 型號,價格"></textarea>
+          <button onclick="bulkInput(${catIdx})">批次新增</button>
+        `;
+        div.appendChild(bulkDiv);
 
         // model table
         const table = document.createElement('table');
