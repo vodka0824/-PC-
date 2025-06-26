@@ -5,20 +5,33 @@
   <title>電腦估價車後台管理</title>
   <style>
     body { background: #eef4f8; font-family: 'Noto Sans TC', Arial, sans-serif; margin: 0; padding: 0;}
-    .container { width: 760px; margin: 32px auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 32px #0001; padding: 32px 36px 24px 36px;}
+    .container { width: 900px; margin: 32px auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 32px #0001; padding: 32px 36px 24px 36px;}
     h2 { color: #1a9bd7; margin-top: 0; font-weight: 900; letter-spacing: 2px;}
     .category-list { margin-bottom: 28px;}
-    .category-item { background: #f6fbff; border-radius: 8px; margin-bottom: 18px; padding: 16px 22px 10px 22px; border: 1px solid #c6e6f2; position: relative;}
+    .category-item { background: #f6fbff; border-radius: 8px; margin-bottom: 18px; padding: 20px 22px 18px 22px; border: 1px solid #c6e6f2; position: relative;}
     .category-header { display: flex; align-items: center; margin-bottom: 10px;}
     .category-name { font-size: 1.15rem; font-weight: bold; color: #0076a6; margin-right: 12px;}
     .delete-category { color: #e70000; background: none; border: none; cursor: pointer; font-size: 0.95rem; margin-left: 10px; transition: color 0.2s;}
     .delete-category:hover { color: #b00000;}
+    .subcategory-block { margin-left: 18px; margin-bottom: 20px; background: #e8f8fd; border-radius:8px; padding: 14px 18px;}
+    .subcategory-header { display: flex; align-items: center; margin-bottom: 8px;}
+    .subcategory-title { font-size: 1.07rem; font-weight: bold; color: #1a9bd7;}
+    .delete-subcategory { color: #e70000; background: none; border: none; cursor: pointer; font-size: 0.9rem; margin-left: 10px; }
+    .delete-subcategory:hover { color: #b00000;}
+    .add-subcategory-block { margin-bottom: 8px; display: flex; align-items: center; gap: 8px;}
+    .add-subcategory-block input[type=text] { font-size: 1rem; padding: 4px 8px; border-radius: 4px; border: 1px solid #c6e6f2; background: #f9fcfe; width: 140px;}
+    .add-subcategory-block button { font-size: 0.95rem; background: #22b255; color: #fff; border: none; border-radius: 4px; padding: 5px 12px; cursor: pointer;}
+    .add-subcategory-block button:hover { background: #18813b;}
+    .bulk-input-block { margin: 10px 0 14px 0;}
+    .bulk-input-block textarea { width: 100%; height: 60px; border-radius: 5px; border: 1px solid #c6e6f2; padding: 5px; font-size: 1rem;}
+    .bulk-input-block button { margin-top:3px; font-size: 0.93rem; background: #22b255; color: #fff; border: none; border-radius: 4px; padding: 5px 12px; cursor: pointer;}
+    .bulk-input-block button:hover { background: #18813b;}
     .model-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 1rem;}
     .model-table th, .model-table td { border: 1px solid #c6e6f2; padding: 7px 8px; text-align: left; background: #f9fcfe;}
     .model-table th { background: #e2f3fa; color: #0076a6; font-weight: bold;}
-    .model-table td input[type=text], .model-table td input[type=number] { width: 92%; padding: 2px; font-size: 1rem; border: 1px solid #c6e6f2; border-radius: 3px; background: #fff;}
+    .model-table td input[type=text], .model-table td input[type=number] { width: 90%; padding: 2px; font-size: 1rem; border: 1px solid #c6e6f2; border-radius: 3px; background: #fff;}
     .delete-model { color: #e70000; background: none; border: none; cursor: pointer; font-size: 1rem; padding: 0 3px; margin-left: 4px;}
-    .add-model-btn { font-size: 0.96rem; background: #1a9bd7; color: #fff; border: none; border-radius: 4px; padding: 5px 17px; margin-top: 5px; cursor: pointer; transition: background 0.2s;}
+    .add-model-btn { font-size: 0.93rem; background: #1a9bd7; color: #fff; border: none; border-radius: 4px; padding: 5px 14px; margin-top: 5px; cursor: pointer; transition: background 0.2s;}
     .add-model-btn:hover { background: #1580b8; }
     .add-category-block { margin-bottom: 34px; display: flex; align-items: center; gap: 12px;}
     .add-category-block input[type=text] { font-size: 1rem; padding: 5px 10px; border-radius: 4px; border: 1px solid #c6e6f2; background: #f9fcfe; width: 220px;}
@@ -28,46 +41,36 @@
     .save-btn { font-size: 1.08rem; background: #22b255; color: #fff; border: none; border-radius: 6px; padding: 10px 34px; cursor: pointer; transition: background 0.2s; font-weight: bold; letter-spacing: 1px;}
     .save-btn:hover { background: #18813b;}
     .msg { color: #008813; margin-top: 10px; font-size: 1.02rem; text-align: right; min-height: 24px;}
-    .bulk-input-block { margin: 12px 0;}
-    .bulk-input-block textarea { width: 100%; height: 80px; border-radius: 5px; border: 1px solid #c6e6f2; padding: 5px; font-size: 1rem;}
-    .bulk-input-block button { margin-top:3px; font-size: 0.95rem; background: #22b255; color: #fff; border: none; border-radius: 4px; padding: 5px 14px; cursor: pointer;}
-    .bulk-input-block button:hover { background: #18813b;}
-    @media (max-width: 850px) { .container { width: 96vw; padding: 10px;}}
+    @media (max-width: 1100px) { .container { width: 99vw; padding:10px;}}
   </style>
 </head>
 <body>
   <div class="container">
     <h2>電腦零件資料後台管理</h2>
-
+    <!-- 新增類別 -->
     <div class="add-category-block">
       <input type="text" id="newCategory" placeholder="輸入新增類別名稱">
       <button onclick="addCategory()">新增類別</button>
     </div>
-
     <div id="categoryList" class="category-list"></div>
-
     <div class="save-block">
       <button class="save-btn" onclick="saveAll()">儲存所有資料</button>
       <div class="msg" id="msg"></div>
     </div>
   </div>
-
   <script>
-    // 資料格式: [{name:'處理器',models:[{model:'Intel...', price:12345}, ...]}, ...]
+    // 資料結構: [{name:'處理器', subcategories:[{name:'Intel', models:[{model:'', price:''}]}]}]
     let data = [];
-
     function loadData() {
       const raw = localStorage.getItem('partsData');
       data = raw ? JSON.parse(raw) : [];
       renderCategories();
     }
-
     function saveAll() {
       localStorage.setItem('partsData', JSON.stringify(data));
       document.getElementById('msg').textContent = "資料已儲存！";
       setTimeout(()=>document.getElementById('msg').textContent='', 2000);
     }
-
     function addCategory() {
       const name = document.getElementById('newCategory').value.trim();
       if(!name) return;
@@ -75,54 +78,66 @@
         alert('已存在相同類別');
         return;
       }
-      data.push({name: name, models: []});
+      data.push({name: name, subcategories: []});
       document.getElementById('newCategory').value = '';
       renderCategories();
     }
-
     function deleteCategory(idx) {
       if(confirm('確定要刪除此類別？')) {
         data.splice(idx,1);
         renderCategories();
       }
     }
-
-    function addModel(catIdx) {
-      data[catIdx].models.push({model:'', price:''});
+    function addSubcategory(catIdx) {
+      const input = document.getElementById('newSubcategory'+catIdx);
+      const name = input.value.trim();
+      if(!name) return;
+      const cat = data[catIdx];
+      if(cat.subcategories.find(sc=>sc.name===name)) {
+        alert('已存在相同子類別');
+        return;
+      }
+      cat.subcategories.push({name: name, models: []});
+      input.value = '';
       renderCategories();
     }
-
-    function updateModel(catIdx, modelIdx, key, value) {
-      data[catIdx].models[modelIdx][key] = value;
+    function deleteSubcategory(catIdx, subIdx) {
+      if(confirm('確定要刪除此子類別？')) {
+        data[catIdx].subcategories.splice(subIdx,1);
+        renderCategories();
+      }
     }
-
-    function deleteModel(catIdx, modelIdx) {
-      data[catIdx].models.splice(modelIdx,1);
+    function addModel(catIdx, subIdx) {
+      data[catIdx].subcategories[subIdx].models.push({model:'', price:''});
       renderCategories();
     }
-
-    function bulkInput(catIdx) {
-      const area = document.getElementById('bulkInput' + catIdx);
+    function updateModel(catIdx, subIdx, modelIdx, key, value) {
+      data[catIdx].subcategories[subIdx].models[modelIdx][key] = value;
+    }
+    function deleteModel(catIdx, subIdx, modelIdx) {
+      data[catIdx].subcategories[subIdx].models.splice(modelIdx,1);
+      renderCategories();
+    }
+    function bulkInput(catIdx, subIdx) {
+      const area = document.getElementById('bulkInput' + catIdx + '_' + subIdx);
       const lines = area.value.trim().split('\n');
       // 型號[tab]價格 或 型號,價格 或 型號（只要型號）
       lines.forEach(line => {
         let arr = line.split('\t');
         if(arr.length < 2) arr = line.split(',');
         let model = arr[0].trim();
-        // 僅保留型號
-        if(model) data[catIdx].models.push({model: model, price: ''});
+        let price = arr[1] ? arr[1].replace(/[^\d]/g,'') : '';
+        if(model) data[catIdx].subcategories[subIdx].models.push({model, price});
       });
       area.value = '';
       renderCategories();
     }
-
     function renderCategories() {
       const list = document.getElementById('categoryList');
       list.innerHTML = '';
       data.forEach((cat, catIdx) => {
         const div = document.createElement('div');
         div.className = 'category-item';
-
         // header
         const header = document.createElement('div');
         header.className = 'category-header';
@@ -133,58 +148,85 @@
         delBtn.onclick = ()=>deleteCategory(catIdx);
         header.appendChild(delBtn);
         div.appendChild(header);
+        // 新增子類別
+        const addSubDiv = document.createElement('div');
+        addSubDiv.className = 'add-subcategory-block';
+        addSubDiv.innerHTML = `<input type="text" id="newSubcategory${catIdx}" placeholder="新增子類別">
+        <button onclick="addSubcategory(${catIdx})">新增子類別</button>`;
+        div.appendChild(addSubDiv);
 
-        // bulk input
-        const bulkDiv = document.createElement('div');
-        bulkDiv.className = 'bulk-input-block';
-        bulkDiv.innerHTML = `
-          <textarea id="bulkInput${catIdx}" placeholder="可直接從 Google Sheet 複製貼上多行，格式：型號[TAB]價格 或 型號,價格"></textarea>
-          <button onclick="bulkInput(${catIdx})">批次新增</button>
-        `;
-        div.appendChild(bulkDiv);
+        // 子類別列舉
+        cat.subcategories.forEach((sub, subIdx) => {
+          const scDiv = document.createElement('div');
+          scDiv.className = 'subcategory-block';
+          // 子類別標題
+          const scHeader = document.createElement('div');
+          scHeader.className = 'subcategory-header';
+          scHeader.innerHTML = `<span class="subcategory-title">${sub.name}</span>`;
+          const scDelBtn = document.createElement('button');
+          scDelBtn.className = 'delete-subcategory';
+          scDelBtn.innerText = '刪除子類別';
+          scDelBtn.onclick = ()=>deleteSubcategory(catIdx, subIdx);
+          scHeader.appendChild(scDelBtn);
+          scDiv.appendChild(scHeader);
 
-        // model table
-        const table = document.createElement('table');
-        table.className = 'model-table';
-        table.innerHTML = `
-          <tr>
-            <th>型號</th>
-            <th>價格</th>
-            <th>操作</th>
-          </tr>
-        `;
-        cat.models.forEach((m, modelIdx) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>
-              <input type="text" value="${m.model||''}" 
-                oninput="updateModel(${catIdx},${modelIdx},'model',this.value)">
-            </td>
-            <td>
-              <input type="number" min="0" step="1" value="${m.price||''}" 
-                oninput="updateModel(${catIdx},${modelIdx},'price',this.value)">
-            </td>
-            <td>
-              <button class="delete-model" onclick="deleteModel(${catIdx},${modelIdx})">刪除</button>
-            </td>
+          // 批次新增
+          const bulkDiv = document.createElement('div');
+          bulkDiv.className = 'bulk-input-block';
+          bulkDiv.innerHTML = `
+            <textarea id="bulkInput${catIdx}_${subIdx}" placeholder="可直接從 Google Sheet 複製貼上多行，格式：型號[TAB]價格 或 型號,價格"></textarea>
+            <button onclick="bulkInput(${catIdx},${subIdx})">批次新增</button>
           `;
-          table.appendChild(tr);
-        });
-        div.appendChild(table);
+          scDiv.appendChild(bulkDiv);
 
-        // add model btn
-        const addModelBtn = document.createElement('button');
-        addModelBtn.className = 'add-model-btn';
-        addModelBtn.innerText = '+ 新增型號';
-        addModelBtn.onclick = ()=>addModel(catIdx);
-        div.appendChild(addModelBtn);
+          // model table
+          const table = document.createElement('table');
+          table.className = 'model-table';
+          table.innerHTML = `
+            <tr>
+              <th>型號</th>
+              <th>價格</th>
+              <th>操作</th>
+            </tr>
+          `;
+          sub.models.forEach((m, modelIdx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>
+                <input type="text" value="${m.model||''}" 
+                  oninput="updateModel(${catIdx},${subIdx},${modelIdx},'model',this.value)">
+              </td>
+              <td>
+                <input type="number" min="0" step="1" value="${m.price||''}" 
+                  oninput="updateModel(${catIdx},${subIdx},${modelIdx},'price',this.value)">
+              </td>
+              <td>
+                <button class="delete-model" onclick="deleteModel(${catIdx},${subIdx},${modelIdx})">刪除</button>
+              </td>
+            `;
+            table.appendChild(tr);
+          });
+          scDiv.appendChild(table);
+
+          // add model btn
+          const addModelBtn = document.createElement('button');
+          addModelBtn.className = 'add-model-btn';
+          addModelBtn.innerText = '+ 新增型號';
+          addModelBtn.onclick = ()=>addModel(catIdx, subIdx);
+          scDiv.appendChild(addModelBtn);
+
+          div.appendChild(scDiv);
+        });
 
         list.appendChild(div);
       });
     }
-
+    // 讓 HTML 能存取這些function
     window.updateModel = updateModel;
     window.deleteModel = deleteModel;
+    window.addSubcategory = addSubcategory;
+    window.deleteSubcategory = deleteSubcategory;
+    window.bulkInput = bulkInput;
 
     loadData();
   </script>
