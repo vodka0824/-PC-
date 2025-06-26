@@ -3,21 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <title>電腦估價車後台管理</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     body { background: #eef4f8; font-family: 'Noto Sans TC', Arial, sans-serif; margin: 0; padding: 0;}
-    .container { width: 900px; margin: 32px auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 32px #0001; padding: 32px 36px 24px 36px;}
+    .container { width: 1050px; margin: 32px auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 32px #0001; padding: 32px 36px 24px 36px;}
     h2 { color: #1a9bd7; margin-top: 0; font-weight: 900; letter-spacing: 2px;}
-    .category-list { margin-bottom: 28px;}
-    .category-item { background: #f6fbff; border-radius: 8px; margin-bottom: 18px; padding: 20px 22px 18px 22px; border: 1px solid #c6e6f2; position: relative;}
-    .category-header { display: flex; align-items: center; margin-bottom: 10px;}
+    .actions { display: flex; gap: 12px; }
+    .category-list { margin-bottom: 28px; max-height: 600px; overflow-y: auto; border:1px solid #e0edf2; border-radius:10px; background: #fafcff;}
+    .category-item { background: #f6fbff; border-radius: 8px; margin-bottom: 18px; padding: 18px 22px 16px 22px; border: 1px solid #c6e6f2; position: relative;}
+    .category-header { display: flex; align-items: center; margin-bottom: 10px; gap: 10px;}
     .category-name { font-size: 1.15rem; font-weight: bold; color: #0076a6; margin-right: 12px;}
-    .delete-category { color: #e70000; background: none; border: none; cursor: pointer; font-size: 0.95rem; margin-left: 10px; transition: color 0.2s;}
+    .delete-category, .clear-category-models { color: #e70000; background: none; border: none; cursor: pointer; font-size: 0.97rem; margin-left: 4px; transition: color 0.2s;}
+    .clear-category-models { color: #c68a00; }
     .delete-category:hover { color: #b00000;}
-    .subcategory-block { margin-left: 18px; margin-bottom: 20px; background: #e8f8fd; border-radius:8px; padding: 14px 18px;}
-    .subcategory-header { display: flex; align-items: center; margin-bottom: 8px;}
+    .clear-category-models:hover { color: #9c7400; }
+    .search-block { margin: 0 0 16px 0; }
+    .search-block input[type=text] { font-size: 1rem; padding: 6px 12px; border-radius: 6px; border: 1px solid #c6e6f2; width: 360px;}
+    .add-category-block { margin-bottom: 34px; display: flex; align-items: center; gap: 12px;}
+    .add-category-block input[type=text] { font-size: 1rem; padding: 5px 10px; border-radius: 4px; border: 1px solid #c6e6f2; background: #f9fcfe; width: 220px;}
+    .add-category-block button { font-size: 0.98rem; background: #1a9bd7; color: #fff; border: none; border-radius: 4px; padding: 7px 20px; cursor: pointer; transition: background 0.2s;}
+    .add-category-block button:hover { background: #1580b8;}
+    .subcategory-block { margin-left: 18px; margin-bottom: 20px; background: #e8f8fd; border-radius:8px; padding: 12px 18px 8px 18px;}
+    .subcategory-header { display: flex; align-items: center; margin-bottom: 8px; gap:8px;}
     .subcategory-title { font-size: 1.07rem; font-weight: bold; color: #1a9bd7;}
-    .delete-subcategory { color: #e70000; background: none; border: none; cursor: pointer; font-size: 0.9rem; margin-left: 10px; }
+    .delete-subcategory, .clear-subcategory-models, .toggle-sub { color: #e70000; background: none; border: none; cursor: pointer; font-size: 0.9rem; margin-left: 6px;}
     .delete-subcategory:hover { color: #b00000;}
+    .clear-subcategory-models { color: #c68a00; }
+    .clear-subcategory-models:hover { color: #9c7400; }
+    .toggle-sub { color: #1a9bd7; font-size:1.1rem; margin-left: 0;}
     .add-subcategory-block { margin-bottom: 8px; display: flex; align-items: center; gap: 8px;}
     .add-subcategory-block input[type=text] { font-size: 1rem; padding: 4px 8px; border-radius: 4px; border: 1px solid #c6e6f2; background: #f9fcfe; width: 140px;}
     .add-subcategory-block button { font-size: 0.95rem; background: #22b255; color: #fff; border: none; border-radius: 4px; padding: 5px 12px; cursor: pointer;}
@@ -33,20 +46,25 @@
     .delete-model { color: #e70000; background: none; border: none; cursor: pointer; font-size: 1rem; padding: 0 3px; margin-left: 4px;}
     .add-model-btn { font-size: 0.93rem; background: #1a9bd7; color: #fff; border: none; border-radius: 4px; padding: 5px 14px; margin-top: 5px; cursor: pointer; transition: background 0.2s;}
     .add-model-btn:hover { background: #1580b8; }
-    .add-category-block { margin-bottom: 34px; display: flex; align-items: center; gap: 12px;}
-    .add-category-block input[type=text] { font-size: 1rem; padding: 5px 10px; border-radius: 4px; border: 1px solid #c6e6f2; background: #f9fcfe; width: 220px;}
-    .add-category-block button { font-size: 0.98rem; background: #1a9bd7; color: #fff; border: none; border-radius: 4px; padding: 7px 20px; cursor: pointer; transition: background 0.2s;}
-    .add-category-block button:hover { background: #1580b8;}
     .save-block { text-align: right; margin-top: 24px;}
     .save-btn { font-size: 1.08rem; background: #22b255; color: #fff; border: none; border-radius: 6px; padding: 10px 34px; cursor: pointer; transition: background 0.2s; font-weight: bold; letter-spacing: 1px;}
     .save-btn:hover { background: #18813b;}
     .msg { color: #008813; margin-top: 10px; font-size: 1.02rem; text-align: right; min-height: 24px;}
+    .folded .subcategory-content { display: none; }
+    .fold-toggle { margin-right:6px; color:#1a9bd7; background:none; border:none; font-size:1.3rem; cursor:pointer; vertical-align:middle;}
+    .fold-toggle.folded { transform: rotate(-90deg);}
+    .category-item, .subcategory-block { transition: background 0.15s;}
+    .category-item.highlight, .subcategory-block.highlight { background: #fef5d6 !important; }
+    .sticky-header { position:sticky; top:0; background:#e2f3fa; z-index:10; }
     @media (max-width: 1100px) { .container { width: 99vw; padding:10px;}}
   </style>
 </head>
 <body>
   <div class="container">
     <h2>電腦零件資料後台管理</h2>
+    <div class="search-block">
+      <input type="text" id="searchInput" placeholder="搜尋類別/子類別/型號名稱..." oninput="renderCategories()">
+    </div>
     <!-- 新增類別 -->
     <div class="add-category-block">
       <input type="text" id="newCategory" placeholder="輸入新增類別名稱">
@@ -61,6 +79,10 @@
   <script>
     // 資料結構: [{name:'處理器', subcategories:[{name:'Intel', models:[{model:'', price:''}]}]}]
     let data = [];
+    let foldedCategories = {};   // {catIdx: true/false}
+    let foldedSubcategories = {}; // {'catIdx_subIdx': true/false}
+    let lastSearch = "";
+
     function loadData() {
       const raw = localStorage.getItem('partsData');
       data = raw ? JSON.parse(raw) : [];
@@ -83,7 +105,7 @@
       renderCategories();
     }
     function deleteCategory(idx) {
-      if(confirm('確定要刪除此類別？')) {
+      if(confirm('確定要刪除此類別（連同所有子類別及型號）？')) {
         data.splice(idx,1);
         renderCategories();
       }
@@ -102,7 +124,7 @@
       renderCategories();
     }
     function deleteSubcategory(catIdx, subIdx) {
-      if(confirm('確定要刪除此子類別？')) {
+      if(confirm('確定要刪除此子類別（連同所有型號）？')) {
         data[catIdx].subcategories.splice(subIdx,1);
         renderCategories();
       }
@@ -132,22 +154,81 @@
       area.value = '';
       renderCategories();
     }
+    function clearSubcategoryModels(catIdx, subIdx) {
+      if(confirm('確定要清空這個子類別下所有型號？')) {
+        data[catIdx].subcategories[subIdx].models = [];
+        renderCategories();
+      }
+    }
+    function clearCategoryModels(catIdx) {
+      if(confirm('確定要清空此類別下所有型號？')) {
+        data[catIdx].subcategories.forEach(sub => sub.models = []);
+        renderCategories();
+      }
+    }
+    function toggleSubcategory(catIdx, subIdx) {
+      const key = `${catIdx}_${subIdx}`;
+      foldedSubcategories[key] = !foldedSubcategories[key];
+      renderCategories();
+    }
+    function toggleCategory(catIdx) {
+      foldedCategories[catIdx] = !foldedCategories[catIdx];
+      renderCategories();
+    }
+    function highlight(text, kw) {
+      if(!kw) return text;
+      return text.replace(new RegExp(kw, "gi"), m=>`<mark>${m}</mark>`);
+    }
+
     function renderCategories() {
       const list = document.getElementById('categoryList');
+      const kw = document.getElementById('searchInput').value.trim().toLowerCase();
+      lastSearch = kw;
       list.innerHTML = '';
       data.forEach((cat, catIdx) => {
+        // 過濾: 若類別/子類別/型號沒命中則不顯示
+        let hitCat = cat.name.toLowerCase().includes(kw);
+        let hitSub = false, hitModel = false;
+        cat.subcategories.forEach(sub=>{
+          if(sub.name.toLowerCase().includes(kw)) hitSub = true;
+          sub.models.forEach(m=>{
+            if((m.model||"").toLowerCase().includes(kw)) hitModel = true;
+          });
+        });
+        if(kw && !(hitCat || hitSub || hitModel)) return;
+
         const div = document.createElement('div');
-        div.className = 'category-item';
+        div.className = 'category-item' + (hitCat&&kw?' highlight':'');
         // header
         const header = document.createElement('div');
         header.className = 'category-header';
-        header.innerHTML = `<span class="category-name">${cat.name}</span>`;
+        // 摺疊按鈕
+        const foldBtn = document.createElement('button');
+        foldBtn.className = 'fold-toggle' + (foldedCategories[catIdx]?' folded':'');
+        foldBtn.innerHTML = foldedCategories[catIdx] ? '▶' : '▼';
+        foldBtn.onclick = ()=>toggleCategory(catIdx);
+        header.appendChild(foldBtn);
+        header.innerHTML += `<span class="category-name">${highlight(cat.name, kw)}</span>`;
+        // 一鍵清空所有型號
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'clear-category-models';
+        clearBtn.innerText = '清空所有型號';
+        clearBtn.onclick = ()=>clearCategoryModels(catIdx);
+        header.appendChild(clearBtn);
+        // 刪除類別
         const delBtn = document.createElement('button');
         delBtn.className = 'delete-category';
         delBtn.innerText = '刪除類別';
         delBtn.onclick = ()=>deleteCategory(catIdx);
         header.appendChild(delBtn);
+
         div.appendChild(header);
+
+        if(foldedCategories[catIdx]) {
+          list.appendChild(div);
+          return;
+        }
+
         // 新增子類別
         const addSubDiv = document.createElement('div');
         addSubDiv.className = 'add-subcategory-block';
@@ -157,18 +238,47 @@
 
         // 子類別列舉
         cat.subcategories.forEach((sub, subIdx) => {
+          // 搜尋過濾
+          let hitSubcat = sub.name.toLowerCase().includes(kw);
+          let hitModel = false;
+          sub.models.forEach(m=>{
+            if((m.model||"").toLowerCase().includes(kw)) hitModel = true;
+          });
+          if(kw && !(hitSubcat || hitModel || hitCat)) return;
+
           const scDiv = document.createElement('div');
-          scDiv.className = 'subcategory-block';
+          scDiv.className = 'subcategory-block' + (hitSubcat&&kw?' highlight':'');
           // 子類別標題
           const scHeader = document.createElement('div');
           scHeader.className = 'subcategory-header';
-          scHeader.innerHTML = `<span class="subcategory-title">${sub.name}</span>`;
+          // 摺疊
+          const foldScBtn = document.createElement('button');
+          foldScBtn.className = 'fold-toggle' + (foldedSubcategories[`${catIdx}_${subIdx}`]?' folded':'');
+          foldScBtn.innerHTML = foldedSubcategories[`${catIdx}_${subIdx}`] ? '▶' : '▼';
+          foldScBtn.onclick = ()=>toggleSubcategory(catIdx, subIdx);
+          scHeader.appendChild(foldScBtn);
+
+          scHeader.innerHTML += `<span class="subcategory-title">${highlight(sub.name, kw)}</span>`;
+          // 一鍵清空
+          const clearScBtn = document.createElement('button');
+          clearScBtn.className = 'clear-subcategory-models';
+          clearScBtn.innerText = '清空型號';
+          clearScBtn.onclick = ()=>clearSubcategoryModels(catIdx, subIdx);
+          scHeader.appendChild(clearScBtn);
+          // 刪除
           const scDelBtn = document.createElement('button');
           scDelBtn.className = 'delete-subcategory';
           scDelBtn.innerText = '刪除子類別';
           scDelBtn.onclick = ()=>deleteSubcategory(catIdx, subIdx);
           scHeader.appendChild(scDelBtn);
+
           scDiv.appendChild(scHeader);
+
+          // 展開/收合
+          if(foldedSubcategories[`${catIdx}_${subIdx}`]) {
+            div.appendChild(scDiv);
+            return;
+          }
 
           // 批次新增
           const bulkDiv = document.createElement('div');
@@ -189,19 +299,25 @@
               <th>操作</th>
             </tr>
           `;
-          sub.models.forEach((m, modelIdx) => {
+          // 型號排序
+          let modelList = [...sub.models];
+          // 支援搜尋時只顯示命中型號
+          if(kw) modelList = modelList.filter(m => (m.model||"").toLowerCase().includes(kw) || hitSubcat || hitCat);
+          modelList.forEach((m, modelIdx) => {
+            // 找出正確索引
+            let trueIdx = sub.models.indexOf(m);
             const tr = document.createElement('tr');
             tr.innerHTML = `
               <td>
                 <input type="text" value="${m.model||''}" 
-                  oninput="updateModel(${catIdx},${subIdx},${modelIdx},'model',this.value)">
+                  oninput="updateModel(${catIdx},${subIdx},${trueIdx},'model',this.value)">
               </td>
               <td>
                 <input type="number" min="0" step="1" value="${m.price||''}" 
-                  oninput="updateModel(${catIdx},${subIdx},${modelIdx},'price',this.value)">
+                  oninput="updateModel(${catIdx},${subIdx},${trueIdx},'price',this.value)">
               </td>
               <td>
-                <button class="delete-model" onclick="deleteModel(${catIdx},${subIdx},${modelIdx})">刪除</button>
+                <button class="delete-model" onclick="deleteModel(${catIdx},${subIdx},${trueIdx})">刪除</button>
               </td>
             `;
             table.appendChild(tr);
@@ -227,6 +343,12 @@
     window.addSubcategory = addSubcategory;
     window.deleteSubcategory = deleteSubcategory;
     window.bulkInput = bulkInput;
+    window.clearSubcategoryModels = clearSubcategoryModels;
+    window.clearCategoryModels = clearCategoryModels;
+
+    // 介面摺疊記憶
+    window.toggleSubcategory = toggleSubcategory;
+    window.toggleCategory = toggleCategory;
 
     loadData();
   </script>
