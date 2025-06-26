@@ -104,13 +104,13 @@
     function bulkInput(catIdx) {
       const area = document.getElementById('bulkInput' + catIdx);
       const lines = area.value.trim().split('\n');
-      // 支援兩欄：型號[tab]價格 或 型號,價格 或 型號（只要一欄也可）
+      // 型號[tab]價格 或 型號,價格 或 型號（只要型號）
       lines.forEach(line => {
         let arr = line.split('\t');
         if(arr.length < 2) arr = line.split(',');
         let model = arr[0].trim();
-        let price = arr[1] ? arr[1].replace(/[^\d]/g,'') : '';
-        if(model) data[catIdx].models.push({model, price});
+        // 僅保留型號
+        if(model) data[catIdx].models.push({model: model, price: ''});
       });
       area.value = '';
       renderCategories();
