@@ -281,18 +281,28 @@
       `;
       let oriTotal = 0;
       partsData.forEach((cat, catIdx) => {
-        // 合併所有子類別的型號
+        // 準備 optgroup+option 結構
+        let selectHtml = `<select data-cat="${catIdx}" onchange="onModelChange(this)">`;
         let allModels = [];
+        let optionIdx = 0;
         (cat.subcategories || []).forEach((subcat, subIdx) => {
-          (subcat.models || []).forEach((m, mIdx) => {
-            allModels.push({
-              label: `${subcat.name} / ${m.model}`,
-              price: m.price,
-              subIdx,
-              mIdx
+          if (subcat.models && subcat.models.length > 0) {
+            selectHtml += `<optgroup label="${subcat.name}">`;
+            subcat.models.forEach((m, mIdx) => {
+              let sel = (optionIdx === (selectedModels[catIdx] || 0)) ? 'selected' : '';
+              selectHtml += `<option value="${optionIdx}" ${sel}>${m.model}</option>`;
+              allModels.push({
+                subIdx,
+                mIdx,
+                price: m.price,
+                model: m.model
+              });
+              optionIdx++;
             });
-          });
+            selectHtml += `</optgroup>`;
+          }
         });
+        selectHtml += "</select>";
         let selectIdx = selectedModels[catIdx] || 0;
         if (selectIdx >= allModels.length) selectIdx = 0;
         let selected = allModels[selectIdx] || {};
@@ -300,14 +310,6 @@
         let qty = quantities[catIdx] !== undefined ? Number(quantities[catIdx]) : 1;
         if(qty < 1) qty = 1;
         oriTotal += price * qty;
-
-        // 組下拉選單
-        let selectHtml = `<select data-cat="${catIdx}" onchange="onModelChange(this)">`;
-        allModels.forEach((m, idx) => {
-          let sel = (idx === selectIdx) ? 'selected' : '';
-          selectHtml += `<option value="${idx}" ${sel}>${m.label}</option>`;
-        });
-        selectHtml += "</select>";
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
