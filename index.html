@@ -84,6 +84,14 @@
       text-align: center;
       width: 50px;
     }
+    .spec-table select {
+      width: 98%;
+      font-size: 1rem;
+      padding: 3px 2px;
+      border-radius: 4px;
+      border: 1px solid #c6e6f2;
+      background: #fff;
+    }
     .summary-row {
       background: #f0f9fd;
       font-weight: bold;
@@ -182,16 +190,18 @@
       <a class="admin-link" href="backend.html" target="_blank">管理後台</a>
     </div>
 
-    <!-- 零件表格（動態產生） -->
-    <table class="spec-table" id="specTable">
-      <tr>
-        <th class="cat">配件類別</th>
-        <th class="model">型號</th>
-        <th class="qty">數量</th>
-        <th class="model">價格</th>
-      </tr>
-      <!-- 動態插入 -->
-    </table>
+    <!-- 零件表格 -->
+    <form id="partsForm">
+      <table class="spec-table" id="specTable">
+        <tr>
+          <th class="cat">配件類別</th>
+          <th class="model">型號</th>
+          <th class="qty">數量</th>
+          <th class="model">價格</th>
+        </tr>
+        <!-- 動態產生 -->
+      </table>
+    </form>
 
     <!-- 價格區 -->
     <div class="price-area">
@@ -240,11 +250,12 @@
       // 舉例：總價打95折
       return Math.round(total * 0.95);
     }
-    // 舉例：原價=零件定價總和
-    function showPartsTable() {
+
+    let selectedModels = {}; // {catIndex: modelIndex}
+
+    function renderPartsTable() {
       const partsData = JSON.parse(localStorage.getItem('partsData') || "[]");
       const table = document.getElementById('specTable');
-      // 清除舊資料
       table.innerHTML = `
         <tr>
           <th class="cat">配件類別</th>
@@ -254,20 +265,34 @@
         </tr>
       `;
       let oriTotal = 0;
-      partsData.forEach(cat => {
-        cat.models.forEach(m => {
-          const priceStr = m.price ? `$ ${Number(m.price).toLocaleString()}` : "";
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td class="cat">${cat.name}</td>
-            <td class="model">${m.model}</td>
-            <td class="qty">1</td>
-            <td class="model">${priceStr}</td>
-          `;
-          table.appendChild(tr);
-          if(m.price) oriTotal += Number(m.price);
+      let nowTotal = 0;
+      // 每個類別一列
+      partsData.forEach((cat, catIdx) => {
+        let models = cat.models || [];
+        // 沒型號就顯示空白
+        let selectIdx = selectedModels[catIdx] || 0;
+        if (selectIdx >= models.length) selectIdx = 0;
+        let price = (models[selectIdx] && models[selectIdx].price) ? Number(models[selectIdx].price) : 0;
+        oriTotal += price;
+
+        const tr = document.createElement('tr');
+        // 型號下拉
+        let selectHtml = `<select data-cat="${catIdx}" onchange="onModelChange(this)">`;
+        models.forEach((m, mIdx) => {
+          let sel = (mIdx === selectIdx) ? 'selected' : '';
+          selectHtml += `<option value="${mIdx}" ${sel}>${m.model}</option>`;
         });
+        selectHtml += "</select>";
+
+        tr.innerHTML = `
+          <td class="cat">${cat.name}</td>
+          <td class="model">${selectHtml}</td>
+          <td class="qty">1</td>
+          <td class="model">${price ? '$ ' + price.toLocaleString() : ''}</td>
+        `;
+        table.appendChild(tr);
       });
+
       // 顯示總價
       document.getElementById('oriPrice').textContent = "$ " + oriTotal.toLocaleString();
       // 優惠價
@@ -277,6 +302,15 @@
       // 分期表
       showInstallments(nowPrice);
     }
+
+    // 型號下拉選單變動事件
+    function onModelChange(sel) {
+      const catIdx = sel.getAttribute('data-cat');
+      const modelIdx = sel.value;
+      selectedModels[catIdx] = Number(modelIdx);
+      renderPartsTable();
+    }
+    window.onModelChange = onModelChange;
 
     function showInstallments(nowPrice) {
       // 刷卡分期費率
@@ -347,10 +381,24 @@
       });
     }
 
-    showPartsTable();
+    function loadSelectedModels() {
+      // 預設選第一個型號
+      const partsData = JSON.parse(localStorage.getItem('partsData') || "[]");
+      selectedModels = {};
+      partsData.forEach((cat, catIdx) => {
+        selectedModels[catIdx] = 0;
+      });
+    }
+
+    function updatePage() {
+      loadSelectedModels();
+      renderPartsTable();
+    }
+
+    updatePage();
     // 支援 localStorage 更新後自動刷新
     window.addEventListener('storage', function(e){
-      if(e.key === "partsData") showPartsTable();
+      if(e.key === "partsData") updatePage();
     });
   </script>
 </body>
