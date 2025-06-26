@@ -22,10 +22,15 @@
       position: relative;
       overflow: hidden;
     }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
     .logo {
       display: flex;
       align-items: center;
-      margin-bottom: 12px;
     }
     .logo img {
       height: 60px;
@@ -37,6 +42,19 @@
       letter-spacing: 2px;
       color: #1a9bd7;
     }
+    .admin-link {
+      font-size: 1.05rem;
+      background: #1a9bd7;
+      color: #fff;
+      border-radius: 6px;
+      padding: 8px 18px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background .2s;
+      border: none;
+      margin-left: 20px;
+    }
+    .admin-link:hover { background: #1580b8; }
     .spec-table {
       width: 100%;
       border-collapse: collapse;
@@ -156,82 +174,36 @@
 </head>
 <body>
   <div class="container">
-    <!-- LOGO區 -->
-    <div class="logo">
-      <img src="https://i.imgur.com/C8y1sku.png" alt="KPC Logo">
-      <div class="logo-text">KPC 電腦報價單</div>
+    <div class="topbar">
+      <div class="logo">
+        <img src="https://i.imgur.com/C8y1sku.png" alt="KPC Logo">
+        <div class="logo-text">KPC 電腦報價單</div>
+      </div>
+      <a class="admin-link" href="backend.html" target="_blank">管理後台</a>
     </div>
 
-    <!-- 零件表格 -->
-    <table class="spec-table">
+    <!-- 零件表格（動態產生） -->
+    <table class="spec-table" id="specTable">
       <tr>
         <th class="cat">配件類別</th>
         <th class="model">型號</th>
         <th class="qty">數量</th>
+        <th class="model">價格</th>
       </tr>
-      <tr>
-        <td class="cat">處理器</td>
-        <td class="model">Intel i7-14700F【20核/28緒】2.1GHz(↑5.4G)/33M/無內顯/65W【代理盒裝】</td>
-        <td class="qty">1</td>
-      </tr>
-      <tr>
-        <td class="cat">主機板</td>
-        <td class="model">技嘉 B760M DS3H AX(M-ATX/LAN 2.5Gb+無線/註冊四年保)6+2相</td>
-        <td class="qty">1</td>
-      </tr>
-      <tr>
-        <td class="cat">記憶體</td>
-        <td class="model">金士頓32GB(雙通16GB*2) DDR5-7200 FURY Renegade RGB黑(KF572C38RS2AK2-32)</td>
-        <td class="qty">1</td>
-      </tr>
-      <tr>
-        <td class="cat">固態硬碟</td>
-        <td class="model">三星 990pro NVMe 1TB/Gen4 PCIe 4.0/讀:6000/寫:4000【五年保】</td>
-        <td class="qty">1</td>
-      </tr>
-      <tr>
-        <td class="cat">顯示卡</td>
-        <td class="model">技嘉 RTX5070 EAGLE OC SFF 12G(2587MHz/29cm/三風扇/註五年)</td>
-        <td class="qty">1</td>
-      </tr>
-      <tr>
-        <td class="cat">散熱器</td>
-        <td class="model">曜越 TH360 V2 ARGB 黑 (360mm/ARGB旗艦冷頭+風扇/無限燈效/12cm風扇*3/一體式)</td>
-        <td class="qty">1</td>
-      </tr>
-      <tr>
-        <td class="cat">電源</td>
-        <td class="model">曜越 Toughpower GT 850W (80+金牌/ATX3.1/PCIe 5.1/全模組/10年保)</td>
-        <td class="qty">1</td>
-      </tr>
-      <tr>
-        <td class="cat">機殼</td>
-        <td class="model">曜越 View 380 TG ARGB 黑 長支援背插/全景玻璃透視/ATX</td>
-        <td class="qty">1</td>
-      </tr>
-      <tr>
-        <td class="cat">軟體</td>
-        <td class="model">Windows 11 數位家用版 64位元</td>
-        <td class="qty">1</td>
-      </tr>
-      <tr class="summary-row">
-        <td class="cat">總價</td>
-        <td class="model"></td>
-        <td class="qty"></td>
-      </tr>
+      <!-- 動態插入 -->
     </table>
 
     <!-- 價格區 -->
     <div class="price-area">
-      <span class="ori-price">$ 57,600</span>
+      <span class="ori-price" id="oriPrice">$ 0</span>
       <span class="now-price-label">現金優惠價</span>
-      <span class="now-price">$54,900</span>
-      <span class="notice">*活動延長至8月底</span>
+      <span class="now-price" id="nowPrice">$ 0</span>
+      <span class="notice" id="priceNote"></span>
     </div>
 
     <!-- 分期付款表 -->
     <div class="payment-tables">
-      <table class="payment-table">
+      <table class="payment-table" id="cardTable">
         <tr>
           <th colspan="3">刷卡分期</th>
         </tr>
@@ -240,13 +212,8 @@
           <th>總價</th>
           <th>每期</th>
         </tr>
-        <tr><td>付清</td><td>$ 56,496</td><td>$ 56,496</td></tr>
-        <tr><td>3期</td><td>$ 57,046</td><td>$ 19,015</td></tr>
-        <tr><td>6期</td><td>$ 57,230</td><td>$ 9,538</td></tr>
-        <tr><td>12期</td><td>$ 58,692</td><td>$ 4,891</td></tr>
-        <tr><td>24期</td><td>$ 58,692</td><td>$ 2,446</td></tr>
       </table>
-      <table class="payment-table">
+      <table class="payment-table" id="noCardTable">
         <tr>
           <th colspan="3">無卡分期</th>
         </tr>
@@ -255,14 +222,6 @@
           <th>總價</th>
           <th>每期</th>
         </tr>
-        <tr><td>6期</td><td>$ 57,486</td><td>$ 9,581</td></tr>
-        <tr><td>9期</td><td>$ 59,544</td><td>$ 6,616</td></tr>
-        <tr><td>12期</td><td>$ 61,445</td><td>$ 5,120</td></tr>
-        <tr><td>15期</td><td>$ 63,665</td><td>$ 4,244</td></tr>
-        <tr><td>18期</td><td>$ 65,685</td><td>$ 3,649</td></tr>
-        <tr><td>21期</td><td>$ 67,665</td><td>$ 3,222</td></tr>
-        <tr><td>24期</td><td>$ 69,596</td><td>$ 2,900</td></tr>
-        <tr><td class="red">30期</td><td class="red">$ 65,910</td><td class="red">$ 2,197</td></tr>
       </table>
     </div>
 
@@ -275,5 +234,124 @@
       ※ 全機皆代理正品，含稅報價有發票，享有原廠完整保固可註冊。
     </div>
   </div>
+  <script>
+    // 模擬現金優惠折扣(自行調整)
+    function calcDiscount(total) {
+      // 舉例：總價打95折
+      return Math.round(total * 0.95);
+    }
+    // 舉例：原價=零件定價總和
+    function showPartsTable() {
+      const partsData = JSON.parse(localStorage.getItem('partsData') || "[]");
+      const table = document.getElementById('specTable');
+      // 清除舊資料
+      table.innerHTML = `
+        <tr>
+          <th class="cat">配件類別</th>
+          <th class="model">型號</th>
+          <th class="qty">數量</th>
+          <th class="model">價格</th>
+        </tr>
+      `;
+      let oriTotal = 0;
+      partsData.forEach(cat => {
+        cat.models.forEach(m => {
+          const priceStr = m.price ? `$ ${Number(m.price).toLocaleString()}` : "";
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="cat">${cat.name}</td>
+            <td class="model">${m.model}</td>
+            <td class="qty">1</td>
+            <td class="model">${priceStr}</td>
+          `;
+          table.appendChild(tr);
+          if(m.price) oriTotal += Number(m.price);
+        });
+      });
+      // 顯示總價
+      document.getElementById('oriPrice').textContent = "$ " + oriTotal.toLocaleString();
+      // 優惠價
+      const nowPrice = calcDiscount(oriTotal);
+      document.getElementById('nowPrice').textContent = "$ " + nowPrice.toLocaleString();
+      document.getElementById('priceNote').textContent = "*實際優惠依現場公告";
+      // 分期表
+      showInstallments(nowPrice);
+    }
+
+    function showInstallments(nowPrice) {
+      // 刷卡分期費率
+      const cardRates = [
+        {term: "付清", rate: 1, fee: 0},
+        {term: "3期", rate: 1.03, fee: 0},
+        {term: "6期", rate: 1.035, fee: 0},
+        {term: "12期", rate: 1.06, fee: 0},
+        {term: "24期", rate: 1.06, fee: 0}
+      ];
+      // 無卡分期費率
+      const noCardRates = [
+        {term: "6期", rate: 1.026, fee: 0},
+        {term: "9期", rate: 1.055, fee: 0},
+        {term: "12期", rate: 1.065, fee: 0},
+        {term: "15期", rate: 1.073, fee: 0},
+        {term: "18期", rate: 1.09, fee: 0},
+        {term: "21期", rate: 1.115, fee: 0},
+        {term: "24期", rate: 1.115, fee: 0},
+        {term: "30期", rate: 1.12, fee: 0}
+      ];
+      // 刷卡分期
+      const cardTable = document.getElementById('cardTable');
+      cardTable.innerHTML = `
+        <tr>
+          <th colspan="3">刷卡分期</th>
+        </tr>
+        <tr>
+          <th>期數</th>
+          <th>總價</th>
+          <th>每期</th>
+        </tr>
+      `;
+      cardRates.forEach(r => {
+        const total = Math.round(nowPrice * r.rate + r.fee);
+        const per = Math.ceil(total / (parseInt(r.term) || 1));
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.term}</td>
+          <td>$ ${total.toLocaleString()}</td>
+          <td>$ ${r.term === "付清" ? total.toLocaleString() : per.toLocaleString()}</td>
+        `;
+        cardTable.appendChild(tr);
+      });
+      // 無卡分期
+      const noCardTable = document.getElementById('noCardTable');
+      noCardTable.innerHTML = `
+        <tr>
+          <th colspan="3">無卡分期</th>
+        </tr>
+        <tr>
+          <th>期數</th>
+          <th>總價</th>
+          <th>每期</th>
+        </tr>
+      `;
+      noCardRates.forEach(r => {
+        const total = Math.round(nowPrice * r.rate + r.fee);
+        const per = Math.ceil(total / (parseInt(r.term) || 1));
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.term}</td>
+          <td>$ ${total.toLocaleString()}</td>
+          <td>$ ${per.toLocaleString()}</td>
+        `;
+        if(r.term === "30期") tr.querySelectorAll('td').forEach(td=>td.classList.add('red'));
+        noCardTable.appendChild(tr);
+      });
+    }
+
+    showPartsTable();
+    // 支援 localStorage 更新後自動刷新
+    window.addEventListener('storage', function(e){
+      if(e.key === "partsData") showPartsTable();
+    });
+  </script>
 </body>
 </html>
