@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>KPC 電腦估價車系統</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans TC', Arial, Helvetica, sans-serif;
+      background: #f8f8f8;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 900px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px #0002;
+      padding: 32px 32px 24px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .logo img {
+      height: 60px;
+      margin-right: 15px;
+    }
+    .logo-text {
+      font-size: 2.1rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #1a9bd7;
+    }
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+      font-size: 1.05rem;
+    }
+    .spec-table th, .spec-table td {
+      border: 1px solid #c6e6f2;
+      padding: 8px 10px;
+      text-align: left;
+      background: #f9fcfe;
+    }
+    .spec-table th {
+      background: #e2f3fa;
+      color: #0076a6;
+      font-weight: bold;
+    }
+    .spec-table .cat {
+      font-weight: bold;
+      color: #0076a6;
+      width: 110px;
+    }
+    .spec-table .model {
+      color: #333;
+    }
+    .spec-table .qty {
+      text-align: center;
+      width: 50px;
+    }
+    .summary-row {
+      background: #f0f9fd;
+      font-weight: bold;
+    }
+    .price-area {
+      display: flex;
+      align-items: baseline;
+      margin: 8px 0 12px 0;
+      gap: 22px;
+    }
+    .ori-price {
+      text-decoration: line-through;
+      font-size: 1.3rem;
+      color: #666;
+      font-weight: bold;
+    }
+    .now-price-label {
+      color: #d00;
+      font-weight: bold;
+      font-size: 1rem;
+      margin-left: 8px;
+    }
+    .now-price {
+      color: #e70000;
+      font-size: 2.6rem;
+      font-weight: 900;
+      margin-right: 8px;
+      font-style: italic;
+      letter-spacing: 2px;
+      font-family: 'Arial Black', 'Noto Sans TC', Arial, Helvetica, sans-serif;
+    }
+    .notice {
+      color: #e70000;
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-top: -6px;
+      margin-bottom: 20px;
+    }
+    .payment-tables {
+      display: flex;
+      gap: 32px;
+      margin: 14px 0 20px 0;
+    }
+    .payment-table {
+      width: 285px;
+      border-collapse: collapse;
+      font-size: 0.98rem;
+    }
+    .payment-table th, .payment-table td {
+      border: 1px solid #dde8ee;
+      padding: 7px 10px;
+      text-align: center;
+    }
+    .payment-table th {
+      background: #e2f3fa;
+      color: #0076a6;
+    }
+    .payment-table .red {
+      color: #e70000; font-weight:bold;
+    }
+    .main-image {
+      position: absolute;
+      right: 40px;
+      bottom: 70px;
+      width: 320px;
+      max-width: 38%;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px #0003;
+    }
+    .footer-note {
+      font-size: 0.95rem;
+      color: #555;
+      margin-top: 22px;
+      line-height: 1.65;
+      border-top: 1px dashed #c6e6f2;
+      padding-top: 10px;
+    }
+    @media(max-width:1100px){
+      .container {width:98%;}
+      .main-image {position:static;display:block;margin:20px auto 0;max-width:320px;}
+      .payment-tables {flex-direction:column;align-items:flex-start;}
+    }
+    @media(max-width:600px){
+      .container {padding:10px;}
+      .main-image{width:100%;max-width:95vw;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- LOGO區 -->
+    <div class="logo">
+      <img src="https://i.imgur.com/C8y1sku.png" alt="KPC Logo">
+      <div class="logo-text">KPC 電腦報價單</div>
+    </div>
+
+    <!-- 零件表格 -->
+    <table class="spec-table">
+      <tr>
+        <th class="cat">配件類別</th>
+        <th class="model">型號</th>
+        <th class="qty">數量</th>
+      </tr>
+      <tr>
+        <td class="cat">處理器</td>
+        <td class="model">Intel i7-14700F【20核/28緒】2.1GHz(↑5.4G)/33M/無內顯/65W【代理盒裝】</td>
+        <td class="qty">1</td>
+      </tr>
+      <tr>
+        <td class="cat">主機板</td>
+        <td class="model">技嘉 B760M DS3H AX(M-ATX/LAN 2.5Gb+無線/註冊四年保)6+2相</td>
+        <td class="qty">1</td>
+      </tr>
+      <tr>
+        <td class="cat">記憶體</td>
+        <td class="model">金士頓32GB(雙通16GB*2) DDR5-7200 FURY Renegade RGB黑(KF572C38RS2AK2-32)</td>
+        <td class="qty">1</td>
+      </tr>
+      <tr>
+        <td class="cat">固態硬碟</td>
+        <td class="model">三星 990pro NVMe 1TB/Gen4 PCIe 4.0/讀:6000/寫:4000【五年保】</td>
+        <td class="qty">1</td>
+      </tr>
+      <tr>
+        <td class="cat">顯示卡</td>
+        <td class="model">技嘉 RTX5070 EAGLE OC SFF 12G(2587MHz/29cm/三風扇/註五年)</td>
+        <td class="qty">1</td>
+      </tr>
+      <tr>
+        <td class="cat">散熱器</td>
+        <td class="model">曜越 TH360 V2 ARGB 黑 (360mm/ARGB旗艦冷頭+風扇/無限燈效/12cm風扇*3/一體式)</td>
+        <td class="qty">1</td>
+      </tr>
+      <tr>
+        <td class="cat">電源</td>
+        <td class="model">曜越 Toughpower GT 850W (80+金牌/ATX3.1/PCIe 5.1/全模組/10年保)</td>
+        <td class="qty">1</td>
+      </tr>
+      <tr>
+        <td class="cat">機殼</td>
+        <td class="model">曜越 View 380 TG ARGB 黑 長支援背插/全景玻璃透視/ATX</td>
+        <td class="qty">1</td>
+      </tr>
+      <tr>
+        <td class="cat">軟體</td>
+        <td class="model">Windows 11 數位家用版 64位元</td>
+        <td class="qty">1</td>
+      </tr>
+      <tr class="summary-row">
+        <td class="cat">總價</td>
+        <td class="model"></td>
+        <td class="qty"></td>
+      </tr>
+    </table>
+
+    <!-- 價格區 -->
+    <div class="price-area">
+      <span class="ori-price">$ 57,600</span>
+      <span class="now-price-label">現金優惠價</span>
+      <span class="now-price">$54,900</span>
+      <span class="notice">*活動延長至8月底</span>
+    </div>
+
+    <!-- 分期付款表 -->
+    <div class="payment-tables">
+      <table class="payment-table">
+        <tr>
+          <th colspan="3">刷卡分期</th>
+        </tr>
+        <tr>
+          <th>期數</th>
+          <th>總價</th>
+          <th>每期</th>
+        </tr>
+        <tr><td>付清</td><td>$ 56,496</td><td>$ 56,496</td></tr>
+        <tr><td>3期</td><td>$ 57,046</td><td>$ 19,015</td></tr>
+        <tr><td>6期</td><td>$ 57,230</td><td>$ 9,538</td></tr>
+        <tr><td>12期</td><td>$ 58,692</td><td>$ 4,891</td></tr>
+        <tr><td>24期</td><td>$ 58,692</td><td>$ 2,446</td></tr>
+      </table>
+      <table class="payment-table">
+        <tr>
+          <th colspan="3">無卡分期</th>
+        </tr>
+        <tr>
+          <th>期數</th>
+          <th>總價</th>
+          <th>每期</th>
+        </tr>
+        <tr><td>6期</td><td>$ 57,486</td><td>$ 9,581</td></tr>
+        <tr><td>9期</td><td>$ 59,544</td><td>$ 6,616</td></tr>
+        <tr><td>12期</td><td>$ 61,445</td><td>$ 5,120</td></tr>
+        <tr><td>15期</td><td>$ 63,665</td><td>$ 4,244</td></tr>
+        <tr><td>18期</td><td>$ 65,685</td><td>$ 3,649</td></tr>
+        <tr><td>21期</td><td>$ 67,665</td><td>$ 3,222</td></tr>
+        <tr><td>24期</td><td>$ 69,596</td><td>$ 2,900</td></tr>
+        <tr><td class="red">30期</td><td class="red">$ 65,910</td><td class="red">$ 2,197</td></tr>
+      </table>
+    </div>
+
+    <!-- 商品圖片 -->
+    <img class="main-image" src="https://i.imgur.com/1QOQJ8G.png" alt="PC機殼展示">
+
+    <!-- 備註 -->
+    <div class="footer-note">
+      ※ 機體皆工程師測試完成後出貨，全機唯一30天新品不良直接換新！一年內免費收送免費檢測！<br>
+      ※ 全機皆代理正品，含稅報價有發票，享有原廠完整保固可註冊。
+    </div>
+  </div>
+</body>
+</html>
