@@ -83,7 +83,7 @@
         {"name":"AMD","models":[]}
       ]}
     ]`);
-    let currentCat = 0, currentSub = 0;
+    let currentCat = 0, currentSub = -1; // -1 for 全部
 
     // 初始化下拉
     function initSelects() {
@@ -101,25 +101,18 @@
       subSel.innerHTML = '';
       currentCat = parseInt(document.getElementById('categorySelect').value, 10);
       const subs = data[currentCat].subcategories || [];
+      // 新增 "全部"
+      subSel.innerHTML = `<option value="-1">全部</option>`;
       subs.forEach((sub, i) => {
         subSel.innerHTML += `<option value="${i}">${sub.name}</option>`;
       });
-      if (subs.length === 0) {
-        currentSub = -1;
-        renderModelTable();
-        return;
-      }
-      if (currentSub >= subs.length) currentSub = 0;
+      if (currentSub > subs.length - 1) currentSub = -1;
       subSel.value = currentSub;
       onSubcategoryChange();
     }
     function onSubcategoryChange() {
       const subSel = document.getElementById('subcategorySelect');
-      if (!subSel.options.length) {
-        currentSub = -1;
-      } else {
-        currentSub = parseInt(subSel.value, 10);
-      }
+      currentSub = parseInt(subSel.value, 10);
       renderModelTable();
     }
     // 新增子分類
@@ -141,30 +134,47 @@
     // 型號表格
     function renderModelTable() {
       const block = document.getElementById('modelTableBlock');
-      let models = [];
-      if (currentSub >= 0) {
-        models = (data[currentCat]?.subcategories?.[currentSub]?.models) || [];
-      }
       let html = `<table class="model-table">
         <tr>
           <th><input type="checkbox" id="chkAll" onchange="toggleAll(this)"></th>
           <th>型號</th>
           <th>金額</th>
+          <th>子分類</th>
           <th>操作</th>
         </tr>`;
-      if (currentSub >= 0) {
-        models.forEach((m, i) => {
-          // 只顯示產品資訊
+      let hasData = false;
+      if(currentSub === -1) {
+        // 全部子分類
+        data[currentCat].subcategories.forEach((sub, subIdx) => {
+          (sub.models||[]).forEach((m, i) => {
+            hasData = true;
+            let label = (m.model||'').replace(/[,，].*$/, '');
+            html += `<tr>
+              <td><input type="checkbox" class="chk" data-sub="${subIdx}" data-idx="${i}"></td>
+              <td><input type="text" value="${label}" onchange="editModel(${subIdx},${i},'model',this.value)"></td>
+              <td><input type="number" value="${m.price||''}" onchange="editModel(${subIdx},${i},'price',this.value)"></td>
+              <td>${sub.name}</td>
+              <td><button class="delete-btn" onclick="deleteModel(${subIdx},${i})">刪除</button></td>
+            </tr>`;
+          });
+        });
+      } else if (currentSub >= 0) {
+        // 單一子分類
+        let sub = data[currentCat].subcategories[currentSub];
+        (sub.models||[]).forEach((m, i) => {
+          hasData = true;
           let label = (m.model||'').replace(/[,，].*$/, '');
           html += `<tr>
-            <td><input type="checkbox" class="chk" data-idx="${i}"></td>
-            <td><input type="text" value="${label}" onchange="editModel(${i},'model',this.value)"></td>
-            <td><input type="number" value="${m.price||''}" onchange="editModel(${i},'price',this.value)"></td>
-            <td><button class="delete-btn" onclick="deleteModel(${i})">刪除</button></td>
+            <td><input type="checkbox" class="chk" data-sub="${currentSub}" data-idx="${i}"></td>
+            <td><input type="text" value="${label}" onchange="editModel(${currentSub},${i},'model',this.value)"></td>
+            <td><input type="number" value="${m.price||''}" onchange="editModel(${currentSub},${i},'price',this.value)"></td>
+            <td>${sub.name}</td>
+            <td><button class="delete-btn" onclick="deleteModel(${currentSub},${i})">刪除</button></td>
           </tr>`;
         });
-      } else {
-        html += `<tr><td colspan="4" style="color:#e70000;text-align:center;">請先建立子分類</td></tr>`;
+      }
+      if (!hasData) {
+        html += `<tr><td colspan="5" style="color:#e70000;text-align:center;">請先建立子分類或型號資料</td></tr>`;
       }
       html += `</table>`;
       block.innerHTML = html;
@@ -176,7 +186,7 @@
       if (!txt) return;
       let lines = txt.split('\n');
       let cat = data[currentCat];
-      let curSub = (currentSub >= 0) ? cat.subcategories[currentSub] : null;
+      let curSub = (currentSub>=0) ? cat.subcategories[currentSub] : null;
       let cnt = 0;
       lines.forEach(line => {
         let arr = line.split(',');
@@ -204,41 +214,41 @@
       });
       saveAll();
       initSelects();
-      // 如果只有單一子分類被加，重選到該子分類
       document.getElementById('batchInput').value = '';
       document.getElementById('msg').textContent = `已批次新增 ${cnt} 筆`;
     }
     // 編輯型號/金額
-    function editModel(idx, key, val) {
-      if(currentSub < 0) return;
+    function editModel(subIdx, idx, key, val) {
+      if(subIdx < 0) return;
       if(key === 'model'){
         val = val.replace(/[,，].*$/, '');
-        data[currentCat].subcategories[currentSub].models[idx].model = val;
+        data[currentCat].subcategories[subIdx].models[idx].model = val;
       }else{
-        data[currentCat].subcategories[currentSub].models[idx][key] = val.replace(/[^\d]/g,'');
+        data[currentCat].subcategories[subIdx].models[idx][key] = val.replace(/[^\d]/g,'');
       }
       saveAll();
     }
     // 單一刪除
-    function deleteModel(idx) {
-      if(currentSub < 0) return;
+    function deleteModel(subIdx, idx) {
+      if(subIdx < 0) return;
       if(confirm('確定刪除這筆？')){
-        data[currentCat].subcategories[currentSub].models.splice(idx,1);
+        data[currentCat].subcategories[subIdx].models.splice(idx,1);
         renderModelTable();
         saveAll();
       }
     }
     // 批次刪除
     function batchDelete() {
-      if(currentSub < 0) return;
-      let checked = Array.from(document.querySelectorAll('.chk')).filter(c=>c.checked).map(c=>parseInt(c.dataset.idx,10));
+      let checked = Array.from(document.querySelectorAll('.chk')).filter(c=>c.checked)
+        .map(c=>({sub:parseInt(c.dataset.sub,10), idx:parseInt(c.dataset.idx,10)}));
       if(checked.length === 0) {
         document.getElementById('msg').textContent = "請先勾選要刪除的型號";
         return;
       }
       if(!confirm('確定要刪除選取的型號嗎？')) return;
-      let models = data[currentCat].subcategories[currentSub].models;
-      checked.sort((a,b)=>b-a).forEach(i=>models.splice(i,1));
+      // 倒序刪除避免 index 混亂
+      checked.sort((a,b)=>b.sub===a.sub?b.idx-a.idx:b.sub-a.sub)
+        .forEach(({sub, idx})=>data[currentCat].subcategories[sub].models.splice(idx,1));
       renderModelTable();
       saveAll();
       document.getElementById('msg').textContent = `已刪除 ${checked.length} 筆`;
@@ -247,29 +257,35 @@
     function toggleAll(box) {
       document.querySelectorAll('.chk').forEach(c=>c.checked=box.checked);
     }
-    // 匯出CSV（只匯出當前子分類）
+    // 匯出CSV（只匯出當前子分類或全部）
     function exportCSV() {
-      if(currentSub < 0) {
-        document.getElementById('msg').textContent = "請先選擇子分類";
+      let rows = ['型號,金額,子分類'];
+      if(currentSub === -1) {
+        data[currentCat].subcategories.forEach(sub=>{
+          (sub.models||[]).forEach(m=>{
+            let model = (m.model||'').replace(/[,，].*$/, '');
+            let price = m.price ? `$${m.price}` : '';
+            rows.push(`${model},${price},${sub.name}`);
+          });
+        });
+      } else if(currentSub >= 0) {
+        let sub = data[currentCat].subcategories[currentSub];
+        (sub.models||[]).forEach(m=>{
+          let model = (m.model||'').replace(/[,，].*$/, '');
+          let price = m.price ? `$${m.price}` : '';
+          rows.push(`${model},${price},${sub.name}`);
+        });
+      }
+      if(rows.length === 1){
+        document.getElementById('msg').textContent = "目前沒有資料可匯出";
         return;
       }
-      const models = data[currentCat].subcategories[currentSub].models;
-      if(models.length === 0){
-        document.getElementById('msg').textContent = "目前子類別沒有資料可匯出";
-        return;
-      }
-      let rows = ['型號,金額'];
-      models.forEach(m=>{
-        let model = (m.model||'').replace(/[,，].*$/, '');
-        let price = m.price ? `$${m.price}` : '';
-        rows.push(`${model},${price}`);
-      });
       let csv = rows.join('\r\n');
       let blob = new Blob([csv], {type: 'text/csv'});
       let a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       let catName = data[currentCat].name.replace(/[\/\\]/g,'-');
-      let subName = data[currentCat].subcategories[currentSub].name.replace(/[\/\\]/g,'-');
+      let subName = (currentSub===-1?'全部':data[currentCat].subcategories[currentSub].name.replace(/[\/\\]/g,'-'));
       a.download = `${catName}_${subName}.csv`;
       document.body.appendChild(a);
       a.click();
