@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <title>KPC 電腦估價車系統</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <!-- jQuery & Select2 for 下拉搜尋 -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <style>
     body {
       font-family: 'Noto Sans TC', Arial, Helvetica, sans-serif;
@@ -94,12 +98,23 @@
       background: #f8eede;
     }
     .spec-table select {
-      width: 98%;
+      width: 100%;
       font-size: 1rem;
       padding: 3px 2px;
       border-radius: 4px;
       border: 1px solid #c6e6f2;
       background: #fff;
+    }
+    .select2-container .select2-selection--single {
+      height: 36px !important;
+      padding: 4px 0;
+      font-size: 1rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      line-height: 36px !important;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: 36px !important;
     }
     .spec-table input[type=number] {
       width: 60px;
@@ -263,13 +278,17 @@
     </div>
   </div>
   <script>
-    // 優惠價計算
     function calcDiscount(total) {
       return Math.round(total * 0.95);
     }
 
     let selectedModels = {};
     let quantities = {};
+
+    // 產生唯一 id，避免 select2 互相干擾
+    function genSelectId(catIdx) {
+      return 'modelSelect' + catIdx;
+    }
 
     function renderPartsTable() {
       const partsData = JSON.parse(localStorage.getItem('partsData') || "[]");
@@ -284,8 +303,8 @@
       `;
       let oriTotal = 0;
       partsData.forEach((cat, catIdx) => {
-        // 支援含子類別與models扁平格式
-        let selectHtml = `<select data-cat="${catIdx}" onchange="onModelChange(this)">`;
+        let selectId = genSelectId(catIdx);
+        let selectHtml = `<select id="${selectId}" data-cat="${catIdx}">`;
         let allModels = [];
 
         // 支援subcategories
@@ -348,14 +367,24 @@
       document.getElementById('nowPrice').textContent = "$ " + nowPrice.toLocaleString();
       document.getElementById('priceNote').textContent = "*實際優惠依現場公告";
       showInstallments(nowPrice);
-    }
 
-    function onModelChange(sel) {
-      const catIdx = sel.getAttribute('data-cat');
-      selectedModels[catIdx] = Number(sel.value);
-      renderPartsTable();
+      // 初始化 Select2 搜尋
+      setTimeout(function(){
+        // 避免重複綁定先 destroy
+        $('select[id^="modelSelect"]').select2('destroy');
+        $('select[id^="modelSelect"]').select2({
+          width: 'resolve',
+          dropdownAutoWidth: true,
+          minimumResultsForSearch: 0,
+          placeholder: "請搜尋或選擇型號"
+        }).off('change').on('change', function(){
+          // 用 js event 綁定選擇事件
+          const catIdx = $(this).attr('data-cat');
+          selectedModels[catIdx] = Number($(this).val());
+          renderPartsTable();
+        });
+      }, 0);
     }
-    window.onModelChange = onModelChange;
 
     function onQtyChange(input) {
       const catIdx = input.getAttribute('data-cat');
