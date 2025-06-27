@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>電腦零件後台批次管理</title>
+  <title>電腦零件後台批次管理（支援新增子分類與批次多子分類）</title>
   <meta name="viewport" content="width=1024, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -12,7 +12,7 @@
     .tool-bar { display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;}
     label{font-weight:bold;margin-right:4px;}
     select { font-size:1.05rem;padding:3px 10px;border-radius:5px;border:1px solid #c6e6f2;background:#f9fcfe; }
-    .batch-area { margin:10px 0 6px 0;display:flex;gap:18px;}
+    .batch-area { margin:10px 0 6px 0;display:flex;gap:18px;flex-wrap:wrap;}
     .batch-area textarea { width:260px;height:70px;resize:vertical;border-radius:4px;border:1px solid #c6e6f2;padding:5px;}
     .batch-area .btn { font-size:0.98rem;background:#1a9bd7;color:#fff;border:none;border-radius:4px;padding:6px 16px;cursor:pointer; }
     .batch-area .btn:hover { background:#1580b8;}
@@ -30,18 +30,20 @@
     .tip{color:#888;font-size:0.99rem;margin-top:5px;}
     .msg{color:#008813;font-size:1.05rem;margin-top:7px;}
     .danger{color:#e70000;}
+    .add-sub-block{display:flex;align-items:center;gap:8px;margin-left:6px;}
     @media (max-width:1100px){.container{max-width:99vw;}}
     @media (max-width:700px){
       .tool-bar,.batch-area{flex-direction:column;align-items:flex-start;}
       .container{padding:12px;}
       .model-table td input[type="text"],.model-table td input[type="number"]{font-size:0.98rem;}
       .batch-area textarea{width:97vw;}
+      .add-sub-block{margin-left:0;}
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>電腦零件資料後台管理（批次/匯入/匯出）</h2>
+    <h2>電腦零件資料後台管理（批次/匯入/匯出/子分類管理）</h2>
     <div class="tool-bar">
       <label>類別：
         <select id="categorySelect" onchange="onCategoryChange()"></select>
@@ -49,6 +51,10 @@
       <label>子類別：
         <select id="subcategorySelect" onchange="onSubcategoryChange()"></select>
       </label>
+      <span class="add-sub-block">
+        <input type="text" id="newSubcategory" placeholder="新增子分類">
+        <button class="btn" onclick="addSubcategory()">新增</button>
+      </span>
       <button class="export-btn" onclick="exportCSV()">匯出CSV</button>
       <label class="import-btn" style="margin:0 10px 0 8px;">
         匯入CSV
@@ -57,16 +63,16 @@
       <span style="font-size:0.98rem;color:#888;">（只針對當前子類別）</span>
     </div>
     <div class="batch-area">
-      <textarea id="batchInput" placeholder="每行一筆：型號,金額。例如：\nASUS TUF B650M-PLUS WIFI,$3990"></textarea>
+      <textarea id="batchInput" placeholder="每行一筆：\n子分類A,子分類\n型號1,金額\n型號2,金額\n子分類B,子分類\n型號3,金額\n..."></textarea>
       <button class="btn" onclick="batchAdd()">批次新增</button>
       <button class="delete-btn" onclick="batchDelete()">刪除選取</button>
-      <span class="tip">可貼上多行、支持「,」或「Tab」分隔；金額自動擷取數字</span>
+      <span class="tip">也可只輸入型號與金額（預設加到目前子分類）。<br>若有「,子分類」行，則視為新子分類開始，型號行將歸屬於該子分類。</span>
     </div>
     <div id="modelTableBlock"></div>
     <div class="msg" id="msg"></div>
   </div>
   <script>
-    // 假裝有這樣的資料格式
+    // 資料格式範例
     let data = JSON.parse(localStorage.getItem('partsData') || `[
       {"name":"主機板","subcategories":[
         {"name":"ASUS","models":[{"model":"ASUS TUF B650M-PLUS WIFI,$3990","price":"3990"}]},
@@ -77,17 +83,17 @@
         {"name":"AMD","models":[]}
       ]}
     ]`);
-    // 當前選擇
     let currentCat = 0, currentSub = 0;
 
-    // UI初始化
+    // 初始化下拉
     function initSelects() {
       const catSel = document.getElementById('categorySelect');
       catSel.innerHTML = '';
       data.forEach((cat, i) => {
         catSel.innerHTML += `<option value="${i}">${cat.name}</option>`;
       });
-      currentCat = 0;
+      if (currentCat >= data.length) currentCat = 0;
+      catSel.value = currentCat;
       onCategoryChange();
     }
     function onCategoryChange() {
@@ -98,18 +104,47 @@
       subs.forEach((sub, i) => {
         subSel.innerHTML += `<option value="${i}">${sub.name}</option>`;
       });
-      currentSub = 0;
+      if (subs.length === 0) {
+        currentSub = -1;
+        renderModelTable();
+        return;
+      }
+      if (currentSub >= subs.length) currentSub = 0;
+      subSel.value = currentSub;
       onSubcategoryChange();
     }
     function onSubcategoryChange() {
-      currentSub = parseInt(document.getElementById('subcategorySelect').value, 10);
+      const subSel = document.getElementById('subcategorySelect');
+      if (!subSel.options.length) {
+        currentSub = -1;
+      } else {
+        currentSub = parseInt(subSel.value, 10);
+      }
       renderModelTable();
     }
-
+    // 新增子分類
+    function addSubcategory() {
+      const val = document.getElementById('newSubcategory').value.trim();
+      if (!val) return;
+      if (data[currentCat].subcategories.some(sub=>sub.name===val)) {
+        alert('子分類已存在');
+        return;
+      }
+      data[currentCat].subcategories.push({name: val, models: []});
+      saveAll();
+      initSelects();
+      document.getElementById('subcategorySelect').value = data[currentCat].subcategories.length-1;
+      onSubcategoryChange();
+      document.getElementById('newSubcategory').value = '';
+      document.getElementById('msg').textContent = `已新增子分類：${val}`;
+    }
     // 型號表格
     function renderModelTable() {
       const block = document.getElementById('modelTableBlock');
-      const models = (data[currentCat]?.subcategories?.[currentSub]?.models) || [];
+      let models = [];
+      if (currentSub >= 0) {
+        models = (data[currentCat]?.subcategories?.[currentSub]?.models) || [];
+      }
       let html = `<table class="model-table">
         <tr>
           <th><input type="checkbox" id="chkAll" onchange="toggleAll(this)"></th>
@@ -117,43 +152,66 @@
           <th>金額</th>
           <th>操作</th>
         </tr>`;
-      models.forEach((m, i) => {
-        // 只顯示產品資訊
-        let label = (m.model||'').replace(/[,，].*$/, '');
-        html += `<tr>
-          <td><input type="checkbox" class="chk" data-idx="${i}"></td>
-          <td><input type="text" value="${label}" onchange="editModel(${i},'model',this.value)"></td>
-          <td><input type="number" value="${m.price||''}" onchange="editModel(${i},'price',this.value)"></td>
-          <td><button class="delete-btn" onclick="deleteModel(${i})">刪除</button></td>
-        </tr>`;
-      });
+      if (currentSub >= 0) {
+        models.forEach((m, i) => {
+          // 只顯示產品資訊
+          let label = (m.model||'').replace(/[,，].*$/, '');
+          html += `<tr>
+            <td><input type="checkbox" class="chk" data-idx="${i}"></td>
+            <td><input type="text" value="${label}" onchange="editModel(${i},'model',this.value)"></td>
+            <td><input type="number" value="${m.price||''}" onchange="editModel(${i},'price',this.value)"></td>
+            <td><button class="delete-btn" onclick="deleteModel(${i})">刪除</button></td>
+          </tr>`;
+        });
+      } else {
+        html += `<tr><td colspan="4" style="color:#e70000;text-align:center;">請先建立子分類</td></tr>`;
+      }
       html += `</table>`;
       block.innerHTML = html;
       document.getElementById('msg').textContent = '';
     }
-    // 批次新增
+    // 批次新增（可同時新增多個子分類及型號）
     function batchAdd() {
       let txt = document.getElementById('batchInput').value.trim();
       if (!txt) return;
       let lines = txt.split('\n');
-      let models = data[currentCat].subcategories[currentSub].models;
+      let cat = data[currentCat];
+      let curSub = (currentSub >= 0) ? cat.subcategories[currentSub] : null;
+      let cnt = 0;
       lines.forEach(line => {
-        let arr = line.split('\t');
-        if (arr.length < 2) arr = line.split(',');
-        let model = arr[0].trim();
-        // 只擷取數字當金額
-        let price = arr[1] ? (arr[1].replace(/[^\d]/g, '')) : '';
-        if(model) models.push({ model: model, price: price });
+        let arr = line.split(',');
+        if(arr.length === 2 && arr[1].trim() === '子分類') {
+          // 新子分類
+          let subName = arr[0].trim();
+          let idx = cat.subcategories.findIndex(sub=>sub.name===subName);
+          if(idx === -1) {
+            cat.subcategories.push({name: subName, models: []});
+            curSub = cat.subcategories[cat.subcategories.length-1];
+          } else {
+            curSub = cat.subcategories[idx];
+          }
+        } else if(arr.length >= 2 && curSub) {
+          // 型號+金額
+          let model = arr[0].trim();
+          let price = arr[1] ? arr[1].replace(/[^\d]/g,'') : '';
+          if(model) {
+            curSub.models.push({model, price});
+            cnt++;
+          }
+        } else if(arr.length >= 2 && !curSub) {
+          // 若沒有指定子分類，略過
+        }
       });
-      document.getElementById('batchInput').value = '';
-      renderModelTable();
       saveAll();
-      document.getElementById('msg').textContent = "已批次新增";
+      initSelects();
+      // 如果只有單一子分類被加，重選到該子分類
+      document.getElementById('batchInput').value = '';
+      document.getElementById('msg').textContent = `已批次新增 ${cnt} 筆`;
     }
     // 編輯型號/金額
     function editModel(idx, key, val) {
+      if(currentSub < 0) return;
       if(key === 'model'){
-        // 若有輸入金額仍留在 model，則只保留產品資訊
         val = val.replace(/[,，].*$/, '');
         data[currentCat].subcategories[currentSub].models[idx].model = val;
       }else{
@@ -163,6 +221,7 @@
     }
     // 單一刪除
     function deleteModel(idx) {
+      if(currentSub < 0) return;
       if(confirm('確定刪除這筆？')){
         data[currentCat].subcategories[currentSub].models.splice(idx,1);
         renderModelTable();
@@ -171,6 +230,7 @@
     }
     // 批次刪除
     function batchDelete() {
+      if(currentSub < 0) return;
       let checked = Array.from(document.querySelectorAll('.chk')).filter(c=>c.checked).map(c=>parseInt(c.dataset.idx,10));
       if(checked.length === 0) {
         document.getElementById('msg').textContent = "請先勾選要刪除的型號";
@@ -178,7 +238,6 @@
       }
       if(!confirm('確定要刪除選取的型號嗎？')) return;
       let models = data[currentCat].subcategories[currentSub].models;
-      // 倒序刪除避免 index 混亂
       checked.sort((a,b)=>b-a).forEach(i=>models.splice(i,1));
       renderModelTable();
       saveAll();
@@ -188,8 +247,12 @@
     function toggleAll(box) {
       document.querySelectorAll('.chk').forEach(c=>c.checked=box.checked);
     }
-    // 匯出CSV
+    // 匯出CSV（只匯出當前子分類）
     function exportCSV() {
+      if(currentSub < 0) {
+        document.getElementById('msg').textContent = "請先選擇子分類";
+        return;
+      }
       const models = data[currentCat].subcategories[currentSub].models;
       if(models.length === 0){
         document.getElementById('msg').textContent = "目前子類別沒有資料可匯出";
@@ -197,7 +260,6 @@
       }
       let rows = ['型號,金額'];
       models.forEach(m=>{
-        // 型號與金額都輸出，金額前加 $ 符號
         let model = (m.model||'').replace(/[,，].*$/, '');
         let price = m.price ? `$${m.price}` : '';
         rows.push(`${model},${price}`);
@@ -214,8 +276,13 @@
       document.body.removeChild(a);
       document.getElementById('msg').textContent = "已匯出CSV";
     }
-    // 匯入CSV
+    // 匯入CSV（只針對當前子分類）
     function importCSV(evt) {
+      if(currentSub < 0){
+        document.getElementById('msg').textContent = "請先選擇子分類";
+        evt.target.value = "";
+        return;
+      }
       let file = evt.target.files[0];
       if(!file) return;
       let reader = new FileReader();
@@ -245,7 +312,6 @@
     function saveAll() {
       localStorage.setItem('partsData', JSON.stringify(data));
     }
-
     // 初始化
     initSelects();
     // window.fn for inline html
@@ -258,6 +324,7 @@
     window.toggleAll = toggleAll;
     window.exportCSV = exportCSV;
     window.importCSV = importCSV;
+    window.addSubcategory = addSubcategory;
   </script>
 </body>
 </html>
