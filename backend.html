@@ -66,7 +66,7 @@
       <textarea id="batchInput" placeholder="每行一筆：\n子分類A,子分類\n型號1,金額\n型號2,金額\n子分類B,子分類\n型號3,金額\n..."></textarea>
       <button class="btn" onclick="batchAdd()">批次新增</button>
       <button class="delete-btn" onclick="batchDelete()">刪除選取</button>
-      <span class="tip">也可只輸入型號與金額（預設加到目前子分類）。<br>若有「,子分類」行，則視為新子分類開始，型號行將歸屬於該子分類。</span>
+      <span class="tip">也可只輸入型號與金額（預設加到目前子分類）。<br>若有「,子分類」或「Tab 子分類」行，則視為新子分類開始，型號行將歸屬於該子分類。貼 Excel/Google Sheet 直接支援。</span>
     </div>
     <div id="modelTableBlock"></div>
     <div class="msg" id="msg"></div>
@@ -180,7 +180,7 @@
       block.innerHTML = html;
       document.getElementById('msg').textContent = '';
     }
-    // 批次新增（可同時新增多個子分類及型號）
+    // 批次新增（可同時新增多個子分類及型號，支援 Tab 與逗號）
     function batchAdd() {
       let txt = document.getElementById('batchInput').value.trim();
       if (!txt) return;
@@ -189,9 +189,10 @@
       let curSub = (currentSub>=0) ? cat.subcategories[currentSub] : null;
       let cnt = 0;
       lines.forEach(line => {
-        let arr = line.split(',');
+        // 支援 Tab 與逗號分隔
+        let arr = line.split('\t');
+        if(arr.length < 2) arr = line.split(',');
         if(arr.length === 2 && arr[1].trim() === '子分類') {
-          // 新子分類
           let subName = arr[0].trim();
           let idx = cat.subcategories.findIndex(sub=>sub.name===subName);
           if(idx === -1) {
@@ -201,15 +202,12 @@
             curSub = cat.subcategories[idx];
           }
         } else if(arr.length >= 2 && curSub) {
-          // 型號+金額
           let model = arr[0].trim();
           let price = arr[1] ? arr[1].replace(/[^\d]/g,'') : '';
           if(model) {
             curSub.models.push({model, price});
             cnt++;
           }
-        } else if(arr.length >= 2 && !curSub) {
-          // 若沒有指定子分類，略過
         }
       });
       saveAll();
@@ -309,7 +307,8 @@
         let cnt = 0;
         lines.forEach(line=>{
           if(!line.trim() || /^型號/i.test(line)) return;
-          let arr = line.split(',');
+          let arr = line.split('\t');
+          if(arr.length < 2) arr = line.split(',');
           let model = arr[0].trim();
           let price = arr[1] ? arr[1].replace(/[^\d]/g,'') : '';
           if(model) {
