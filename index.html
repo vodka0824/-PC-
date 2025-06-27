@@ -75,21 +75,21 @@
     .spec-table .cat {
       font-weight: bold;
       color: #0076a6;
-      width: 80px;
+      width: 110px;
     }
     .spec-table .model {
       color: #333;
     }
     .spec-table .qty {
       text-align: center;
-      width: 50px;
+      width: 70px;
     }
     .spec-table .price-cell {
       text-align: right;
       font-size: 1.23rem;
       font-weight: bold;
       color: #d12a00;
-      width: 100px;
+      width: 170px;
       letter-spacing: 1px;
       background: #f8eede;
     }
@@ -263,7 +263,6 @@
     </div>
   </div>
   <script>
-    // 優惠價計算
     function calcDiscount(total) {
       return Math.round(total * 0.95);
     }
@@ -284,17 +283,16 @@
       `;
       let oriTotal = 0;
       partsData.forEach((cat, catIdx) => {
-        // 支援含子類別的格式
         let selectHtml = `<select data-cat="${catIdx}" onchange="onModelChange(this)">`;
         let allModels = [];
         (cat.subcategories || []).forEach((subcat, subIdx) => {
           if (subcat.models && subcat.models.length > 0) {
             selectHtml += `<optgroup label="${subcat.name}">`;
             subcat.models.forEach((m, mIdx) => {
-              // 只保留產品資訊(逗號前)
               let label = (m.model || '').replace(/[,，].*$/, '');
-              let sel = (allModels.length === (selectedModels[catIdx] || 0)) ? 'selected' : '';
-              selectHtml += `<option value="${allModels.length}" ${sel}>${label}</option>`;
+              let idx = allModels.length;
+              let sel = (selectedModels[catIdx] === idx) ? 'selected' : '';
+              selectHtml += `<option value="${idx}" ${sel}>${label}</option>`;
               allModels.push({
                 subIdx,
                 mIdx,
@@ -307,8 +305,8 @@
         });
         selectHtml += "</select>";
 
-        let selectIdx = selectedModels[catIdx] || 0;
-        if (selectIdx >= allModels.length) selectIdx = 0;
+        let selectIdx = selectedModels[catIdx];
+        if (typeof selectIdx === "undefined" || selectIdx >= allModels.length) selectIdx = 0;
         let selected = allModels[selectIdx] || {};
         let price = selected.price ? Number(selected.price) : 0;
         let qty = quantities[catIdx] !== undefined ? Number(quantities[catIdx]) : 1;
@@ -415,6 +413,7 @@
       });
     }
 
+    // 僅在初始呼叫(或資料有異動時)
     function loadSelectedModels() {
       const partsData = JSON.parse(localStorage.getItem('partsData') || "[]");
       selectedModels = {};
@@ -434,6 +433,16 @@
     window.addEventListener('storage', function(e){
       if(e.key === "partsData") updatePage();
     });
+
+    // ========== 優化建議 ==========
+    // 1. 考慮將部分重複運算封裝為函式（如 allModels 展平，價格計算...）。
+    // 2. 狀態可用一個物件 selectedState = [{modelIdx, qty}] 來管理，減少多個全域。
+    // 3. 若資料量大可考慮虛擬捲動、分頁。
+    // 4. 可考慮將 partsData 快取在變數，避免每次都 parse localStorage。
+    // 5. 若未來接後端 API，可將資料存取與 UI 分離。
+    // 6. 介面可加 loading 狀態、異常提示等友善反饋。
+    // 7. 支援手機時，select/表格寬度可再優化（如 overflow scroll）。
+    // ============================
   </script>
 </body>
 </html>
