@@ -197,48 +197,30 @@
         });
         if(kw && !(hitCat || hitSub || hitModel)) return;
 
-        const div = document.createElement('div');
-        div.className = 'category-item' + (hitCat&&kw?' highlight':'');
-        // header
-        const header = document.createElement('div');
-        header.className = 'category-header';
-        // 摺疊按鈕
-        const foldBtn = document.createElement('button');
-        foldBtn.className = 'fold-toggle' + (foldedCategories[catIdx]?' folded':'');
-        foldBtn.innerHTML = foldedCategories[catIdx] ? '▶' : '▼';
-        foldBtn.onclick = ()=>toggleCategory(catIdx);
-        header.appendChild(foldBtn);
-        header.innerHTML += `<span class="category-name">${highlight(cat.name, kw)}</span>`;
-        // 一鍵清空所有型號
-        const clearBtn = document.createElement('button');
-        clearBtn.className = 'clear-category-models';
-        clearBtn.innerText = '清空所有型號';
-        clearBtn.onclick = ()=>clearCategoryModels(catIdx);
-        header.appendChild(clearBtn);
-        // 刪除類別
-        const delBtn = document.createElement('button');
-        delBtn.className = 'delete-category';
-        delBtn.innerText = '刪除類別';
-        delBtn.onclick = ()=>deleteCategory(catIdx);
-        header.appendChild(delBtn);
-
-        div.appendChild(header);
+        // 類別區塊
+        let html = '';
+        html += `<div class="category-item${hitCat&&kw?' highlight':''}">`;
+        html += `<div class="category-header">`;
+        html += `<button class="fold-toggle${foldedCategories[catIdx]?' folded':''}" onclick="window.toggleCategory(${catIdx})">${foldedCategories[catIdx] ? '▶' : '▼'}</button>`;
+        html += `<span class="category-name">${highlight(cat.name, kw)}</span>`;
+        html += `<button class="clear-category-models" onclick="window.clearCategoryModels(${catIdx})">清空所有型號</button>`;
+        html += `<button class="delete-category" onclick="window.deleteCategory(${catIdx})">刪除類別</button>`;
+        html += `</div>`;
 
         if(foldedCategories[catIdx]) {
-          list.appendChild(div);
+          html += `</div>`;
+          list.innerHTML += html;
           return;
         }
 
         // 新增子類別
-        const addSubDiv = document.createElement('div');
-        addSubDiv.className = 'add-subcategory-block';
-        addSubDiv.innerHTML = `<input type="text" id="newSubcategory${catIdx}" placeholder="新增子類別">
-        <button onclick="addSubcategory(${catIdx})">新增子類別</button>`;
-        div.appendChild(addSubDiv);
+        html += `<div class="add-subcategory-block">
+          <input type="text" id="newSubcategory${catIdx}" placeholder="新增子類別">
+          <button onclick="window.addSubcategory(${catIdx})">新增子類別</button>
+        </div>`;
 
-        // 子類別列舉
+        // 子類別
         cat.subcategories.forEach((sub, subIdx) => {
-          // 搜尋過濾
           let hitSubcat = sub.name.toLowerCase().includes(kw);
           let hitModel = false;
           sub.models.forEach(m=>{
@@ -246,98 +228,53 @@
           });
           if(kw && !(hitSubcat || hitModel || hitCat)) return;
 
-          const scDiv = document.createElement('div');
-          scDiv.className = 'subcategory-block' + (hitSubcat&&kw?' highlight':'');
-          // 子類別標題
-          const scHeader = document.createElement('div');
-          scHeader.className = 'subcategory-header';
-          // 摺疊
-          const foldScBtn = document.createElement('button');
-          foldScBtn.className = 'fold-toggle' + (foldedSubcategories[`${catIdx}_${subIdx}`]?' folded':'');
-          foldScBtn.innerHTML = foldedSubcategories[`${catIdx}_${subIdx}`] ? '▶' : '▼';
-          foldScBtn.onclick = ()=>toggleSubcategory(catIdx, subIdx);
-          scHeader.appendChild(foldScBtn);
+          html += `<div class="subcategory-block${hitSubcat&&kw?' highlight':''}">`;
+          html += `<div class="subcategory-header">`;
+          html += `<button class="fold-toggle${foldedSubcategories[`${catIdx}_${subIdx}`]?' folded':''}" onclick="window.toggleSubcategory(${catIdx},${subIdx})">${foldedSubcategories[`${catIdx}_${subIdx}`] ? '▶' : '▼'}</button>`;
+          html += `<span class="subcategory-title">${highlight(sub.name, kw)}</span>`;
+          html += `<button class="clear-subcategory-models" onclick="window.clearSubcategoryModels(${catIdx},${subIdx})">清空型號</button>`;
+          html += `<button class="delete-subcategory" onclick="window.deleteSubcategory(${catIdx},${subIdx})">刪除子類別</button>`;
+          html += `</div>`;
 
-          scHeader.innerHTML += `<span class="subcategory-title">${highlight(sub.name, kw)}</span>`;
-          // 一鍵清空
-          const clearScBtn = document.createElement('button');
-          clearScBtn.className = 'clear-subcategory-models';
-          clearScBtn.innerText = '清空型號';
-          clearScBtn.onclick = ()=>clearSubcategoryModels(catIdx, subIdx);
-          scHeader.appendChild(clearScBtn);
-          // 刪除
-          const scDelBtn = document.createElement('button');
-          scDelBtn.className = 'delete-subcategory';
-          scDelBtn.innerText = '刪除子類別';
-          scDelBtn.onclick = ()=>deleteSubcategory(catIdx, subIdx);
-          scHeader.appendChild(scDelBtn);
-
-          scDiv.appendChild(scHeader);
-
-          // 展開/收合
           if(foldedSubcategories[`${catIdx}_${subIdx}`]) {
-            div.appendChild(scDiv);
+            html += `</div>`;
             return;
           }
 
           // 批次新增
-          const bulkDiv = document.createElement('div');
-          bulkDiv.className = 'bulk-input-block';
-          bulkDiv.innerHTML = `
+          html += `<div class="bulk-input-block">
             <textarea id="bulkInput${catIdx}_${subIdx}" placeholder="可直接從 Google Sheet 複製貼上多行，格式：型號[TAB]價格 或 型號,價格"></textarea>
-            <button onclick="bulkInput(${catIdx},${subIdx})">批次新增</button>
-          `;
-          scDiv.appendChild(bulkDiv);
+            <button onclick="window.bulkInput(${catIdx},${subIdx})">批次新增</button>
+          </div>`;
 
-          // model table
-          const table = document.createElement('table');
-          table.className = 'model-table';
-          table.innerHTML = `
+          // 型號表
+          html += `<table class="model-table">
             <tr>
               <th>型號</th>
               <th>價格</th>
               <th>操作</th>
-            </tr>
-          `;
-          // 型號排序
+            </tr>`;
           let modelList = [...sub.models];
-          // 支援搜尋時只顯示命中型號
           if(kw) modelList = modelList.filter(m => (m.model||"").toLowerCase().includes(kw) || hitSubcat || hitCat);
           modelList.forEach((m, modelIdx) => {
-            // 找出正確索引
             let trueIdx = sub.models.indexOf(m);
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>
-                <input type="text" value="${m.model||''}" 
-                  oninput="updateModel(${catIdx},${subIdx},${trueIdx},'model',this.value)">
-              </td>
-              <td>
-                <input type="number" min="0" step="1" value="${m.price||''}" 
-                  oninput="updateModel(${catIdx},${subIdx},${trueIdx},'price',this.value)">
-              </td>
-              <td>
-                <button class="delete-model" onclick="deleteModel(${catIdx},${subIdx},${trueIdx})">刪除</button>
-              </td>
-            `;
-            table.appendChild(tr);
+            html += `<tr>
+              <td><input type="text" value="${m.model||''}" oninput="window.updateModel(${catIdx},${subIdx},${trueIdx},'model',this.value)"></td>
+              <td><input type="number" min="0" step="1" value="${m.price||''}" oninput="window.updateModel(${catIdx},${subIdx},${trueIdx},'price',this.value)"></td>
+              <td><button class="delete-model" onclick="window.deleteModel(${catIdx},${subIdx},${trueIdx})">刪除</button></td>
+            </tr>`;
           });
-          scDiv.appendChild(table);
-
-          // add model btn
-          const addModelBtn = document.createElement('button');
-          addModelBtn.className = 'add-model-btn';
-          addModelBtn.innerText = '+ 新增型號';
-          addModelBtn.onclick = ()=>addModel(catIdx, subIdx);
-          scDiv.appendChild(addModelBtn);
-
-          div.appendChild(scDiv);
+          html += `</table>
+          <button class="add-model-btn" onclick="window.addModel(${catIdx},${subIdx})">+ 新增型號</button>
+          </div>`;
         });
 
-        list.appendChild(div);
+        html += `</div>`;
+        list.innerHTML += html;
       });
     }
-    // 讓 HTML 能存取這些function
+
+    // 將所有需要 window. 的函式都掛上 window
     window.updateModel = updateModel;
     window.deleteModel = deleteModel;
     window.addSubcategory = addSubcategory;
@@ -345,10 +282,10 @@
     window.bulkInput = bulkInput;
     window.clearSubcategoryModels = clearSubcategoryModels;
     window.clearCategoryModels = clearCategoryModels;
-
-    // 介面摺疊記憶
     window.toggleSubcategory = toggleSubcategory;
     window.toggleCategory = toggleCategory;
+    window.addModel = addModel;
+    window.deleteCategory = deleteCategory;
 
     loadData();
   </script>
