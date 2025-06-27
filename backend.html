@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>電腦零件後台批次管理（支援新增子分類與批次多子分類）</title>
+  <title>電腦零件後台批次管理（含欄位寬度設定）</title>
   <meta name="viewport" content="width=1024, initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
   <style>
@@ -19,7 +19,20 @@
     .model-table { width:100%;border-collapse:collapse;margin-bottom:10px;}
     .model-table th, .model-table td { border:1px solid #c6e6f2;padding:7px 8px;text-align:left; }
     .model-table th { background:#e2f3fa;color:#0076a6;font-weight:bold;}
-    .model-table td input[type="text"], .model-table td input[type="number"]{width:98%;font-size:1rem;padding:2px;border-radius:3px;border:1px solid #c6e6f2;}
+    /* 欄位寬度設定： */
+    .model-table th:nth-child(1), .model-table td:nth-child(1) { width: 40px; }
+    .model-table th:nth-child(2), .model-table td:nth-child(2) { width: 320px; }
+    .model-table th:nth-child(3), .model-table td:nth-child(3) { width: 110px; }
+    .model-table th:nth-child(4), .model-table td:nth-child(4) { width: 140px; }
+    .model-table th:nth-child(5), .model-table td:nth-child(5) { width: 90px; }
+    .model-table td input[type="text"], .model-table td input[type="number"]{
+      width:98%;
+      font-size:1rem;
+      padding:2px;
+      border-radius:3px;
+      border:1px solid #c6e6f2;
+      box-sizing:border-box;
+    }
     .model-table td input[type="checkbox"]{width:16px;height:16px;}
     .delete-btn, .export-btn { background:#e70000;color:#fff;border:none;padding:5px 16px;border-radius:4px;cursor:pointer;margin-left:5px;}
     .delete-btn:hover { background:#b00000;}
@@ -38,6 +51,7 @@
       .model-table td input[type="text"],.model-table td input[type="number"]{font-size:0.98rem;}
       .batch-area textarea{width:97vw;}
       .add-sub-block{margin-left:0;}
+      .model-table th, .model-table td {font-size:0.96em;}
     }
   </style>
 </head>
