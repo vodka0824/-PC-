@@ -67,10 +67,6 @@
       text-align: left;
       background: #f9fcfe;
     }
-    .spec-table th.cat, .spec-table td.cat { width: 140px; }
-    .spec-table th.model, .spec-table td.model { width: 340px; }
-    .spec-table th.qty, .spec-table td.qty { width: 100px; }
-    .spec-table th.price-cell, .spec-table td.price-cell { width: 180px; }
     .spec-table th {
       background: #e2f3fa;
       color: #0076a6;
@@ -79,18 +75,21 @@
     .spec-table .cat {
       font-weight: bold;
       color: #0076a6;
+      width: 110px;
     }
     .spec-table .model {
       color: #333;
     }
     .spec-table .qty {
       text-align: center;
+      width: 70px;
     }
     .spec-table .price-cell {
       text-align: right;
       font-size: 1.23rem;
       font-weight: bold;
       color: #d12a00;
+      width: 170px;
       letter-spacing: 1px;
       background: #f8eede;
     }
@@ -103,7 +102,7 @@
       background: #fff;
     }
     .spec-table input[type=number] {
-      width: 70px;
+      width: 60px;
       font-size: 1rem;
       padding: 3px 2px;
       border-radius: 4px;
@@ -208,6 +207,7 @@
       </div>
       <a class="admin-link" href="backend.html" target="_blank">管理後台</a>
     </div>
+
     <!-- 零件表格 -->
     <form id="partsForm">
       <table class="spec-table" id="specTable">
@@ -215,11 +215,12 @@
           <th class="cat">配件類別</th>
           <th class="model">型號</th>
           <th class="qty">數量</th>
-          <th class="price-cell">價格</th>
+          <th class="model">價格</th>
         </tr>
         <!-- 動態產生 -->
       </table>
     </form>
+
     <!-- 價格區 -->
     <div class="price-area">
       <span class="ori-price" id="oriPrice">$ 0</span>
@@ -227,6 +228,7 @@
       <span class="now-price" id="nowPrice">$ 0</span>
       <span class="notice" id="priceNote"></span>
     </div>
+
     <!-- 分期付款表 -->
     <div class="payment-tables">
       <table class="payment-table" id="cardTable">
@@ -250,8 +252,10 @@
         </tr>
       </table>
     </div>
+
     <!-- 商品圖片 -->
     <img class="main-image" src="https://i.imgur.com/1QOQJ8G.png" alt="PC機殼展示">
+
     <!-- 備註 -->
     <div class="footer-note">
       ※ 機體皆工程師測試完成後出貨，全機唯一30天新品不良直接換新！一年內免費收送免費檢測！<br>
@@ -259,13 +263,12 @@
     </div>
   </div>
   <script>
-    // 優惠價計算
+    // 模擬現金優惠折扣(自行調整)
     function calcDiscount(total) {
       return Math.round(total * 0.95);
     }
-    // 儲存每個類別目前選擇的型號(合併subcat)
+
     let selectedModels = {};
-    // 儲存每個類別目前設定的數量
     let quantities = {};
 
     function renderPartsTable() {
@@ -276,42 +279,32 @@
           <th class="cat">配件類別</th>
           <th class="model">型號</th>
           <th class="qty">數量</th>
-          <th class="price-cell">價格</th>
+          <th class="model">價格</th>
         </tr>
       `;
       let oriTotal = 0;
+      // 每個類別一列
       partsData.forEach((cat, catIdx) => {
-        // 準備 optgroup+option 結構
-        let selectHtml = `<select data-cat="${catIdx}" onchange="onModelChange(this)">`;
-        let allModels = [];
-        let optionIdx = 0;
-        (cat.subcategories || []).forEach((subcat, subIdx) => {
-          if (subcat.models && subcat.models.length > 0) {
-            selectHtml += `<optgroup label="${subcat.name}">`;
-            subcat.models.forEach((m, mIdx) => {
-              let sel = (optionIdx === (selectedModels[catIdx] || 0)) ? 'selected' : '';
-              selectHtml += `<option value="${optionIdx}" ${sel}>${m.model}</option>`;
-              allModels.push({
-                subIdx,
-                mIdx,
-                price: m.price,
-                model: m.model
-              });
-              optionIdx++;
-            });
-            selectHtml += `</optgroup>`;
-          }
-        });
-        selectHtml += "</select>";
+        let models = cat.models || [];
+        // 沒型號就顯示空白
         let selectIdx = selectedModels[catIdx] || 0;
-        if (selectIdx >= allModels.length) selectIdx = 0;
-        let selected = allModels[selectIdx] || {};
-        let price = selected.price ? Number(selected.price) : 0;
+        if (selectIdx >= models.length) selectIdx = 0;
+        let price = (models[selectIdx] && models[selectIdx].price) ? Number(models[selectIdx].price) : 0;
         let qty = quantities[catIdx] !== undefined ? Number(quantities[catIdx]) : 1;
         if(qty < 1) qty = 1;
         oriTotal += price * qty;
 
         const tr = document.createElement('tr');
+        // 型號下拉（這裡只顯示逗號前的產品資訊）
+        let selectHtml = `<select data-cat="${catIdx}" onchange="onModelChange(this)">`;
+        models.forEach((m, mIdx) => {
+          let sel = (mIdx === selectIdx) ? 'selected' : '';
+          // 只保留逗號前的資訊
+          let label = (m.model || '').replace(/[,，].*$/, '');
+          selectHtml += `<option value="${mIdx}" ${sel}>${label}</option>`;
+        });
+        selectHtml += "</select>";
+
         tr.innerHTML = `
           <td class="cat">${cat.name}</td>
           <td class="model">${selectHtml}</td>
@@ -323,20 +316,26 @@
         table.appendChild(tr);
       });
 
+      // 顯示總價
       document.getElementById('oriPrice').textContent = "$ " + oriTotal.toLocaleString();
+      // 優惠價
       const nowPrice = calcDiscount(oriTotal);
       document.getElementById('nowPrice').textContent = "$ " + nowPrice.toLocaleString();
       document.getElementById('priceNote').textContent = "*實際優惠依現場公告";
+      // 分期表
       showInstallments(nowPrice);
     }
 
+    // 型號下拉選單變動事件
     function onModelChange(sel) {
       const catIdx = sel.getAttribute('data-cat');
-      selectedModels[catIdx] = Number(sel.value);
+      const modelIdx = sel.value;
+      selectedModels[catIdx] = Number(modelIdx);
       renderPartsTable();
     }
     window.onModelChange = onModelChange;
 
+    // 數量編輯事件
     function onQtyChange(input) {
       const catIdx = input.getAttribute('data-cat');
       let val = Number(input.value);
@@ -347,7 +346,7 @@
     window.onQtyChange = onQtyChange;
 
     function showInstallments(nowPrice) {
-      // 刷卡分期方案
+      // 刷卡分期費率
       const cardRates = [
         {term: "付清", rate: 1, fee: 0},
         {term: "3期", rate: 1.03, fee: 0},
@@ -355,7 +354,7 @@
         {term: "12期", rate: 1.06, fee: 0},
         {term: "24期", rate: 1.06, fee: 0}
       ];
-      // 無卡分期方案
+      // 無卡分期費率
       const noCardRates = [
         {term: "6期", rate: 1.026, fee: 0},
         {term: "9期", rate: 1.055, fee: 0},
@@ -366,7 +365,7 @@
         {term: "24期", rate: 1.115, fee: 0},
         {term: "30期", rate: 1.12, fee: 0}
       ];
-      // 產生刷卡分期表
+      // 刷卡分期
       const cardTable = document.getElementById('cardTable');
       cardTable.innerHTML = `
         <tr>
@@ -389,7 +388,7 @@
         `;
         cardTable.appendChild(tr);
       });
-      // 產生無卡分期表
+      // 無卡分期
       const noCardTable = document.getElementById('noCardTable');
       noCardTable.innerHTML = `
         <tr>
@@ -415,8 +414,8 @@
       });
     }
 
-    // 初始化預設選擇（每個類別選第一個型號，數量為1）
     function loadSelectedModels() {
+      // 預設選第一個型號
       const partsData = JSON.parse(localStorage.getItem('partsData') || "[]");
       selectedModels = {};
       quantities = {};
@@ -425,11 +424,14 @@
         quantities[catIdx] = 1;
       });
     }
+
     function updatePage() {
       loadSelectedModels();
       renderPartsTable();
     }
+
     updatePage();
+    // 支援 localStorage 更新後自動刷新
     window.addEventListener('storage', function(e){
       if(e.key === "partsData") updatePage();
     });
